@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2022 Renaissance Computing Institute. All rights reserved.
+# SPDX-FileCopyrightText: 2023 Renaissance Computing Institute. All rights reserved.
+# SPDX-FileCopyrightText: 2024 Renaissance Computing Institute. All rights reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: LicenseRef-RENCI
+# SPDX-License-Identifier: MIT
+
+[MASTER]
+init-hook='import sys; sys.path.append("./")'
+disable=broad-except,broad-exception-raised
+max-line-length=150
+max-args=7
+min-public-methods=0
+max-attributes=12
+max-nested-blocks=10
+max-branches=25
+max-statements=60
+max-locals=40
+fail-under=9.5

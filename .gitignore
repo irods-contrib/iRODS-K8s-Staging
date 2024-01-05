@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2022 Renaissance Computing Institute. All rights reserved.
+# SPDX-FileCopyrightText: 2023 Renaissance Computing Institute. All rights reserved.
+# SPDX-FileCopyrightText: 2024 Renaissance Computing Institute. All rights reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: LicenseRef-RENCI
+# SPDX-License-Identifier: MIT
+
+/src/common/__pycache__/
+/src/supervisor/__pycache__/
+
+/src/common/base_config.json
+/src/common/iRODS.Supervisor.JobCreate.log
+/src/common/iRODS.Supervisor.pg_utils.log
+/src/common/iRODS.Supervisor.Jobs.log
+/src/common/iRODS.Supervisor.JobFind.log
+/src/test/.pytest_cache/
