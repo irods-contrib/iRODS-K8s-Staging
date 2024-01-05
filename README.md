@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT
 The iRODS-K8s Staging workflow step microservice.
 
 #### Licenses...
-[![MIT License](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/irods-supervisor-settings/tree/master/LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/irods-contrib/iRODS-K8s-Staging/main/LICENSE)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 [![RENCI License](https://img.shields.io/badge/License-RENCI-blue.svg)](https://www.renci.org/)
 #### Components and versions...
@@ -22,8 +22,8 @@ The iRODS-K8s Staging workflow step microservice.
 [![Linting Pylint](https://img.shields.io/badge/Pylint-%203.0.3-yellow)](https://github.com/PyCQA/pylint)
 [![Pytest](https://img.shields.io/badge/Pytest-%207.4.4-blue)](https://github.com/pytest-dev/pytest)
 #### Build status...
-[![PyLint the codebase](https://github.com/irods-contrib/iRODS-K8s-Supervisor/actions/workflows/pylint.yml/badge.svg)](https://github.com/irods-contrib/iRODS-K8s-Supervisor/actions/workflows/pylint.yml)
-[![Build and push the Docker image](https://github.com/irods-contrib/iRODS-K8s-Supervisor/actions/workflows/image-push.yml/badge.svg)](https://github.com/irods-contrib/iRODS-K8s-Supervisor/actions/workflows/image-push.yml)
+[![PyLint the codebase](https://github.com/irods-contrib/iRODS-K8s-Staging/actions/workflows/pylint.yml/badge.svg)](https://github.com/irods-contrib/iRODS-K8s-Staging/actions/workflows/pylint.yml)
+[![Build and push the Docker image](https://github.com/irods-contrib/iRODS-K8s-Staging/actions/workflows/image-push.yml/badge.svg)](https://github.com/irods-contrib/iRODS-K8s-Staging/actions/workflows/image-push.yml)
 
 ## Description
 The iRODS-K8s Staging product is a microservice used in a iRODS K8s Supervisor workflow step to:

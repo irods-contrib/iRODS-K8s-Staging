@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: LicenseRef-RENCI
 # SPDX-License-Identifier: MIT
 
-# This Dockerfile is used to build the iRODS-K8s-Supervisor image
+# This Dockerfile is used to build the iRODS-K8s-Staging image
 
 FROM python:3.11.7-slim
 
@@ -33,7 +33,7 @@ RUN useradd --create-home -u 1000 nru
 USER nru
 
 # Create the directory for the code and cd to it
-WORKDIR /repo/iRODS-K8s-Supervisor
+WORKDIR /repo/iRODS-K8s-Staging
 
 # Copy in just the requirements first for caching purposes
 COPY requirements.txt requirements.txt
