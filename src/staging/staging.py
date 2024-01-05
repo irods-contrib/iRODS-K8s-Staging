@@ -16,6 +16,10 @@ from src.common.pg_impl import PGImplementation
 
 
 class Staging:
+    """
+    Class that contains functionality for staging
+
+    """
     def __init__(self):
         # get the app version
         self.app_version: str = os.getenv('APP_VERSION', 'Version number not set')
@@ -77,7 +81,7 @@ class Staging:
                 elif step_type == 'final':
                     pass
 
-        except Exception as e:
+        except Exception:
             # declare ready
             self.logger.exception('Exception: The iRODS K8s Staging "%s" request for run id %s failed.', step_type, run_id)
 

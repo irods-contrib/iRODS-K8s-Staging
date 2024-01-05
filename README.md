@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT
 The iRODS-K8s Staging workflow step microservice.
 
 #### Licenses...
-[![MIT License](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/irods-contrib/iRODS-K8s-Staging/main/LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/irods-contrib/iRODS-K8s-Staging/blob/main/LICENSE)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 [![RENCI License](https://img.shields.io/badge/License-RENCI-blue.svg)](https://www.renci.org/)
 #### Components and versions...
