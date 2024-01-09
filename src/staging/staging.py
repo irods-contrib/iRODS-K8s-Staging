@@ -60,7 +60,7 @@ class Staging:
         # is this an initial stage step
         if step_type == StagingType.INITIAL_STAGING:
             # get the run ID
-            run_id: str = run_dir.split('\\')[-1]
+            run_id: str = run_dir.split('/')[-1]
 
             # make the call to perform the op
             ret_val = self.initial_staging(run_dir, run_id, step_type)
