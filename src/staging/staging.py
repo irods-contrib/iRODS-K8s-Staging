@@ -125,6 +125,8 @@ class Staging:
         # init the filename storage
         out_file_name: str = 'empty'
 
+        self.logger.debug(f'Creating test files.')
+
         try:
             # for each test list
             for item in run_data['request_data']['tests']:
