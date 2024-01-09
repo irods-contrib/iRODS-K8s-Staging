@@ -8,4 +8,4 @@
 
 /src/common/__pycache__/
 /src/staging/__pycache__/
-/src/common/iRODS.K8s.Staging.log
+/src/common/iRODS.Staging.log
