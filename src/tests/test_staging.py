@@ -22,7 +22,7 @@ from src.common.staging_enums import StagingType
 @pytest.mark.skip(reason="Local test only")
 def test_run():
     """
-    tests doing the normal operations in initial or final staging.
+    tests doing the normal operations for initial and final staging.
 
     this test requires that DB connection parameters are set
 
@@ -38,108 +38,34 @@ def test_run():
     run_id: str = '0'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.path.dirname(__file__), run_id)
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
 
-    # make the call to stage
+    # make the call to do an initial stage
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING)
 
+    # ensure we got a failure code
     assert ret_val < 0
 
     # set a run ID
     run_id: str = '3'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.path.dirname(__file__), run_id)
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
 
-    # make the call to stage
+    # make the call to do an initial stage
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING)
 
-    # TODO add a test for final staging
+    # make sure of a successful return code and a json file
+    assert ret_val == 0 and os.path.isfile(os.path.join(run_dir, 'test_list.json'))
 
-    assert ret_val == 0
+    # make the call to do a final stage. this invalid directory should fail
+    ret_val = staging.run('//', StagingType.FINAL_STAGING)
 
+    # ensure we got a failure code
+    assert ret_val < 0
 
-@pytest.mark.skip(reason="Local test only")
-def test_initial_staging():
-    """
-    tests doing the operations in initial staging.
+    # make the call to do a final stage. this dir was created above so it should be removed
+    ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
 
-    Note: this test requires that DB connection parameters are set
-
-    :return:
-    """
-    # init the return value
-    ret_val: int = 0
-
-    # create the target class
-    staging = Staging()
-
-    # set up the test conditions
-    run_dir: str = os.path.join(os.path.dirname(__file__), '0')
-
-    # set a run ID
-    run_id: str = run_dir.split('\\')[-1]
-
-    # call the initial staging method
-    ret_val = staging.initial_staging(run_dir, run_id, StagingType.INITIAL_STAGING)
-
-    # check the result. a run id of "0" should fail
-    assert ret_val == -1
-
-    # set up the test conditions
-    run_dir: str = os.path.join(os.path.dirname(__file__), '3')
-
-    # set a run ID
-    run_id: str = run_dir.split('\\')[-1]
-
-    # call the initial staging method
-    ret_val = staging.initial_staging(run_dir, run_id, StagingType.INITIAL_STAGING)
-
-    # check the result. a run id of "3" should be ok
-    assert ret_val == 0
-
-    # check to make sure the directory and file were create
-    assert os.path.isfile(os.path.join(run_dir, 'test_list.json'))
-
-
-@pytest.mark.skip(reason="Local test only")
-def test_final_staging():
-    """
-    tests doing the operations in final staging.
-
-    Note: this test requires that DB connection parameters are set
-
-    :return:
-    """
-    # init the return value
-    ret_val: int = 0
-
-    # create the target class
-    staging = Staging()
-
-    # set up the test conditions
-    run_dir: str = os.path.join(os.path.dirname(__file__), '0')
-
-    # set a run ID
-    run_id: str = run_dir.split('\\')[-1]
-
-    # call the initial staging method
-    ret_val = staging.final_staging(run_dir, run_id, StagingType.INITIAL_STAGING)
-
-    # check the result. a run id of "0" should fail
-    assert ret_val == -1
-
-    # set up the test conditions
-    run_dir: str = os.path.join(os.path.dirname(__file__), '3')
-
-    # set a run ID
-    run_id: str = run_dir.split('\\')[-1]
-
-    # call the initial staging method
-    ret_val = staging.initial_staging(run_dir, run_id, StagingType.INITIAL_STAGING)
-
-    # check the result. a run id of "3" should be ok
-    assert ret_val == 0
-
-    # check to make sure the directory and file were create
-    assert os.path.isfile(os.path.join(run_dir, 'test_list.json'))
+    # make sure of a successful return code and a missing json file
+    assert ret_val == 0 and not os.path.isdir(run_dir)
