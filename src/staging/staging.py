@@ -34,7 +34,7 @@ class Staging:
         log_level, log_path = LoggingUtil.prep_for_logging()
 
         # create a logger
-        self.logger = LoggingUtil.init_logging("iRODS.K8s.Staging", level=log_level, line_format='medium', log_file_path=log_path)
+        self.logger = LoggingUtil.init_logging("iRODS.Staging", level=log_level, line_format='medium', log_file_path=log_path)
 
         # specify the DB to get a connection
         # note the extra comma makes this single item a singleton tuple
