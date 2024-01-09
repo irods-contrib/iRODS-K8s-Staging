@@ -13,6 +13,7 @@
 import sys
 from argparse import ArgumentParser
 from src.staging.staging import Staging
+from src.common.staging_enums import StagingType
 
 if __name__ == '__main__':
     # Main entry point for the staging microservice
@@ -29,9 +30,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     # declare the command params
-    parser.add_argument('--run_id', default=None, help='The Supervisor run request ID.', type=str, required=True)
-    parser.add_argument('--step_type', default=None, help='The type of staging step, initial or final.', type=str, required=True)
     parser.add_argument('--run_dir', default=None, help='The name of the run directory to use for the staging operations.', type=str, required=True)
+    parser.add_argument('--step_type', default=None, help='The type of staging step, initial or final.', type=str, required=True)
 
     # collect the params
     args = parser.parse_args()
@@ -40,9 +40,9 @@ if __name__ == '__main__':
     ret_val: int = 0
 
     # validate the inputs
-    if args.run_id != '' and args.run_dir != '' and args.step_type != '':
+    if args.run_dir != '' and args.step_type != '':
         # check to make sure we got a legit staging type
-        if args.step_type not in ['initial', 'final']:
+        if args.step_type not in [StagingType.INITIAL_STAGING.value, StagingType.FINAL_STAGING.value]:
             # set an error code
             ret_val: int = -2
     else:
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # should we continue
     if ret_val == 0:
         # do the staging
-        ret_val = stage_obj.run(args.run_id, args.run_dir, args.step_type)
+        ret_val = stage_obj.run(args.run_dir, args.step_type)
 
     # exit with the final exit code
     sys.exit(ret_val)
