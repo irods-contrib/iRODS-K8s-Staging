@@ -11,6 +11,8 @@
 """
 import os
 import json
+import shutil
+
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
 from src.common.staging_enums import StagingType
@@ -83,14 +85,14 @@ class Staging:
         ret_val: int = 0
 
         try:
-            # make the directory
-            os.makedirs(run_dir, exist_ok=True)
-
             # try to make the call for records
             run_data: json = self.db_info.get_run_def(run_id)
 
             # did getting the data go ok
             if run_data != -1:
+                # make the directory
+                os.makedirs(run_dir, exist_ok=True)
+
                 # create the file that contains the test list
                 with open(os.path.join(run_dir, 'test_list.json'), 'w', encoding='utf-8') as fp:
                     fp.write(json.dumps(run_data['request_data']['tests']))
@@ -121,7 +123,7 @@ class Staging:
 
         try:
             # remove the run directory
-            os.unlink(run_dir)
+            shutil.rmtree(run_dir)
 
         except Exception:
             # declare ready
