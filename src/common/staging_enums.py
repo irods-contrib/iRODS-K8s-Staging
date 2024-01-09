@@ -33,7 +33,7 @@ class StagingTestExecutor(str, Enum):
 
     """
     # consumer tests
-    consumer = 'consumer'
+    CONSUMER = 'consumer'
 
     # provider tests
-    provider = 'provider'
+    PROVIDER = 'provider'

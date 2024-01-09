@@ -143,7 +143,7 @@ class Staging:
 
                         # write out the data
                         with open(out_file_name, 'w', encoding='utf-8') as fp:
-                            self.logger.debug(f'Writing to {out_file_name}')
+                            self.logger.debug('Writing to %s', out_file_name)
 
                             # write out the preamble
                             fp.write('#/bin/bash\ncd /var/lib/irods;\n')
