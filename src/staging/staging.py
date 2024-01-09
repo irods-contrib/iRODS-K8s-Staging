@@ -13,6 +13,7 @@ import os
 import json
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
+from src.common.staging_enums import StagingType
 
 
 class Staging:
@@ -40,13 +41,12 @@ class Staging:
         # create a DB connection object
         self.db_info: PGImplementation = PGImplementation(db_names, _logger=self.logger)
 
-    def run(self, run_id: str, run_dir: str, step_type: str) -> int:
+    def run(self, run_dir: str, step_type: StagingType) -> int:
         """
         Performs the requested type of staging operation.
 
-        The supervisor will mount the /data directory for this component.
+        The supervisor will mount the /data directory for this component by default.
 
-        :param run_id: The ID of the supervisor run request.
         :param run_dir: The base path of the directory to use for the staging operations.
         :param step_type: The type of staging step, either 'initial' or 'final'
 
@@ -55,37 +55,80 @@ class Staging:
         # init the return value
         ret_val: int = 0
 
-        try:
-            # get the full path to the target directory
-            full_path = os.path.join(run_dir, run_id)
+        # is this an initial stage step
+        if step_type == StagingType.INITIAL_STAGING:
+            # get the run ID
+            run_id: str = run_dir.split('\\')[-1]
 
+            # make the call to perform the op
+            ret_val = self.initial_staging(run_dir, run_id, step_type)
+        # else this a final stage step
+        elif step_type == StagingType.FINAL_STAGING:
+            # make the call to perform the op
+            ret_val = self.final_staging(run_dir, step_type)
+
+        # return to the caller
+        return ret_val
+
+    def initial_staging(self, run_dir: str, run_id: str, staging_type: StagingType) -> int:
+        """
+        Performs the initial staging
+
+        :param run_dir: The path of the directory to use for the staging operations.
+        :param run_id: The ID of the supervisor run request.
+        :param staging_type: The type of staging step, either 'initial' or 'final'
+        :return:
+        """
+        # init the return code
+        ret_val: int = 0
+
+        try:
             # make the directory
-            os.makedirs(full_path, exist_ok=True)
+            os.makedirs(run_dir, exist_ok=True)
 
             # try to make the call for records
-            run_data = self.db_info.get_run_def(run_id)
+            run_data: json = self.db_info.get_run_def(run_id)
 
-            # was there an error getting the data
-            if run_data == -1:
+            # did getting the data go ok
+            if run_data != -1:
+                # create the file that contains the test list
+                with open(os.path.join(run_dir, 'test_list.json'), 'w', encoding='utf-8') as fp:
+                    fp.write(json.dumps(run_data['request_data']['tests']))
+            else:
                 # set the return value
                 ret_val = run_data
-            # go ahead and process the request
-            else:
-                # is this a initial stage step
-                if step_type == 'initial':
-                    # create the file that contains the test list
-                    with open(os.path.join(full_path, 'test_list.json'), 'w', encoding='utf-8') as fp:
-                        fp.write(json.dumps(run_data['request_data']['tests']))
-
-                # is this a final stage step
-                elif step_type == 'final':
-                    pass
 
         except Exception:
             # declare ready
-            self.logger.exception('Exception: The iRODS K8s Staging "%s" request for run id %s failed.', step_type, run_id)
+            self.logger.exception('Exception: The iRODS K8s "%s" staging request for run directory %s failed.', staging_type, run_dir)
 
+            # set the exception error code
             ret_val = -99
 
-        # return to the caller
+        # return the result to the caller
+        return ret_val
+
+    def final_staging(self, run_dir: str, staging_type: StagingType) -> int:
+        """
+        Performs the initial staging
+
+        :param run_dir: The path of the directory to use for the staging operations.
+        :param staging_type: The type of staging step, either 'initial' or 'final'
+        :return:
+        """
+        # init the return code
+        ret_val: int = 0
+
+        try:
+            # remove the run directory
+            os.unlink(run_dir)
+
+        except Exception:
+            # declare ready
+            self.logger.exception('Exception: The iRODS K8s "%s" staging request for run directory %s failed.', staging_type, run_dir)
+
+            # set the exception error code
+            ret_val = -99
+
+        # return the result to the caller
         return ret_val
