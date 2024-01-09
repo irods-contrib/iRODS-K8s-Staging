@@ -25,3 +25,15 @@ class StagingType(str, Enum):
 
     # final staging
     FINAL_STAGING = 'final'
+
+
+class StagingTestExecutor(str, Enum):
+    """
+    Class to specify the different test executor types
+
+    """
+    # consumer tests
+    consumer = 'consumer'
+
+    # provider tests
+    provider = 'provider'

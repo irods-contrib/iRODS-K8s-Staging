@@ -15,7 +15,7 @@ import shutil
 
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
-from src.common.staging_enums import StagingType
+from src.common.staging_enums import StagingType, StagingTestExecutor
 
 
 class Staging:
@@ -93,9 +93,10 @@ class Staging:
                 # make the directory
                 os.makedirs(run_dir, exist_ok=True)
 
-                # create the file that contains the test list
-                with open(os.path.join(run_dir, 'test_list.json'), 'w', encoding='utf-8') as fp:
-                    fp.write(json.dumps(run_data['request_data']['tests']))
+                # if there are tests requested create the files
+                if 'tests' in run_data['request_data']:
+                    # create the test file(s)
+                    ret_val = self.create_test_files(run_dir, run_data)
             else:
                 # set the return value
                 ret_val = run_data
@@ -108,6 +109,57 @@ class Staging:
             ret_val = -99
 
         # return the result to the caller
+        return ret_val
+
+    def create_test_files(self, run_dir: str, run_data: json) -> int:
+        """
+        Creates the files that contain the requested test executor and tests.
+
+        :param run_dir:
+        :param run_data:
+        :return:
+        """
+        # init the return
+        ret_val: int = 0
+
+        # init the filename storage
+        out_file_name: str = 'empty'
+
+        try:
+            # for each test list
+            for item in run_data['request_data']['tests']:
+                # get the name of the executor type of the tests
+                executor = list(item)[0]
+
+                # is this a legit executor
+                if executor in StagingTestExecutor.__members__:
+                    # get the list of tests for this executor
+                    tests = list(item.values())[0]
+
+                    # check the list of tests
+                    if len(tests) > 0:
+                        # generate the output path/file name
+                        out_file_name = os.path.join(run_dir, f'{executor}_test_list.json')
+
+                        # write out the data
+                        with open(out_file_name, 'w', encoding='utf-8') as fp:
+                            self.logger.debug(f'Writing to {out_file_name}')
+
+                            # write out the preamble
+                            fp.write('#/bin/bash\ncd /var/lib/irods;\n')
+
+                            # write out each test
+                            for test in tests:
+                                # create the test entry with some extra info
+                                fp.write(f'echo "running {test}"; python3 scripts/run_tests.py --run_s {test};\n')
+        except Exception:
+            # declare ready
+            self.logger.exception('Exception: Error creating a test file: %s.', out_file_name)
+
+            # set the return
+            ret_val = -98
+
+        # return to the caller
         return ret_val
 
     def final_staging(self, run_dir: str, staging_type: StagingType) -> int:

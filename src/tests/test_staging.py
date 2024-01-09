@@ -69,3 +69,42 @@ def test_run():
 
     # make sure of a successful return code and a missing json file
     assert ret_val == 0 and not os.path.isdir(run_dir)
+
+
+def test_file_creation():
+    """
+    tests the creation of a file that contains the requested tests
+
+    :return:
+    """
+    # init the return value
+    ret_val: int = 0
+
+    # create the target class
+    staging = Staging()
+
+    # create a test list
+    run_data: dict = {'request_data': {"workflow-type": "CORE", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
+                                       "tests": [{'consumer': ["test_ihelp", "test_ilocate", "test_ils"]},
+                                                 {'provider': ["test_ihelp", "test_ilocate", "test_ils"]}]}}
+
+    # make the call
+    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data)
+
+    # check the result
+    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'consumer_test_list.json')) and os.path.isfile(
+        os.path.join(os.path.dirname(__file__), 'provider_test_list.json'))
+
+    # remove the files created
+    os.unlink(os.path.join(os.path.dirname(__file__), 'consumer_test_list.json'))
+    os.unlink(os.path.join(os.path.dirname(__file__), 'provider_test_list.json'))
+
+    run_data: dict = {'request_data': {'workflow-type': 'CORE', 'os-image': 'ubuntu-20.04:latest', 'test-image': 'busybox:1.35',
+                                       'tests': [{'consumer': ["test_ihelp", "test_ilocate", "test_ils"]}]}}
+
+    # make the call
+    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data)
+
+    # check the result
+    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'consumer_test_list.json')) and not os.path.isfile(
+        os.path.join(os.path.dirname(__file__), 'provider_test_list.json'))
