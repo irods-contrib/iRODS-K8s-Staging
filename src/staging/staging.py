@@ -125,8 +125,8 @@ class Staging:
         """
         Creates the files that contain the requested test executor and tests.
 
-        :param run_dir:
-        :param run_data:
+        :param run_dir: The path of the directory to use for the staging operations.
+        :param run_data: The run data information from the supervisor
         :return:
         """
         # init the return
@@ -163,17 +163,17 @@ class Staging:
                             # write out each test
                             for test in tests:
                                 # create the test entry with some extra info
-                                fp.write(f'echo "running {test}"; python3 scripts/run_tests.py --run_s {test};\n')
+                                fp.write(f'echo "Running {test}"; python3 scripts/run_tests.py --xml_output --run_s {test}; \n')
 
                             # declare the testing complete
-                            fp.write('echo "Tests complete.";\n')
+                            fp.write(f'echo "Copying test results..."; cp ./test-reports/*.xml {run_dir}; echo "Tests complete.";\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
                             os.chmod(out_file_name, 0o777)
         except Exception:
             # declare ready
-            self.logger.exception('Exception: Error creating a test file: %s.', out_file_name)
+            self.logger.exception('Exception: Error creating the test file: %s.', out_file_name)
 
             # set the return
             ret_val = -98
