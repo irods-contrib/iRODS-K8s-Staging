@@ -12,6 +12,7 @@
 import os
 import json
 import shutil
+import sys
 
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
@@ -57,10 +58,15 @@ class Staging:
         # init the return value
         ret_val: int = 0
 
-        # is this an initial stage step
+        # is this an initial stage step?
         if step_type == StagingType.INITIAL_STAGING:
-            # get the run ID
-            run_id: str = run_dir.split('/')[-1]
+            # parse the run id differently in Windows environments
+            if sys.platform == 'win32':
+                # get the run ID
+                run_id: str = run_dir.split('\\')[-1]
+            else:
+                # get the run ID
+                run_id: str = run_dir.split('/')[-1]
 
             # make the call to perform the op
             ret_val = self.initial_staging(run_dir, run_id, step_type)
@@ -88,12 +94,12 @@ class Staging:
             # try to make the call for records
             run_data: json = self.db_info.get_run_def(run_id)
 
-            # did getting the data go ok
+            # did getting the data to go ok
             if run_data != -1:
                 # make the directory
                 os.makedirs(run_dir, exist_ok=True)
 
-                # if there are tests requested create the files
+                # if there are tests requested, create the files
                 if 'tests' in run_data['request_data']:
                     # create the test file(s)
                     ret_val = self.create_test_files(run_dir, run_data)
@@ -130,10 +136,10 @@ class Staging:
         try:
             # for each test list
             for item in run_data['request_data']['tests']:
-                # get the name of the executor type of the tests
+                # get the name of the executor type for the tests
                 executor = list(item)[0]
 
-                # is this a legit executor
+                # is this a legit executor?
                 if executor in StagingTestExecutor.__members__:
                     # get the list of tests for this executor
                     tests = list(item.values())[0]
@@ -141,7 +147,7 @@ class Staging:
                     # check the list of tests
                     if len(tests) > 0:
                         # generate the output path/file name
-                        out_file_name = os.path.join(run_dir, f'{executor}_test_list.json')
+                        out_file_name = os.path.join(run_dir, f'{executor}_test_list.sh')
 
                         # write out the data
                         with open(out_file_name, 'w', encoding='utf-8') as fp:
