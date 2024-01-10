@@ -99,6 +99,10 @@ class Staging:
                 # make the directory
                 os.makedirs(run_dir, exist_ok=True)
 
+                # make sure the directory has the correct permissions
+                if sys.platform != 'win32':
+                    os.chmod(run_dir, 0o777)
+
                 # if there are tests requested, create the files
                 if 'tests' in run_data['request_data']:
                     # create the test file(s)
