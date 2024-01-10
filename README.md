@@ -26,7 +26,7 @@ The iRODS-K8s Staging workflow step microservice.
 [![Build and push the Docker image](https://github.com/irods-contrib/iRODS-K8s-Staging/actions/workflows/image-push.yml/badge.svg)](https://github.com/irods-contrib/iRODS-K8s-Staging/actions/workflows/image-push.yml)
 
 ## Description
-The iRODS-K8s Staging product is a microservice used in a iRODS K8s Supervisor workflow step to:
+The iRODS-K8s Staging product is a microservice used in the iRODS K8s Supervisor workflow step to:
  - Perform data initializations and create configuration files for standup and testing.
  - Performs finalization operations when the workflow is complete.
 
