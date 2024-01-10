@@ -160,6 +160,10 @@ class Staging:
                             for test in tests:
                                 # create the test entry with some extra info
                                 fp.write(f'echo "running {test}"; python3 scripts/run_tests.py --run_s {test};\n')
+
+                        # make sure the file has the correct permissions
+                        if sys.platform != 'win32':
+                            os.chmod(out_file_name, 0o777)
         except Exception:
             # declare ready
             self.logger.exception('Exception: Error creating a test file: %s.', out_file_name)
