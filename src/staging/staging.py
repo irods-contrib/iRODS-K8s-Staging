@@ -161,6 +161,9 @@ class Staging:
                                 # create the test entry with some extra info
                                 fp.write(f'echo "running {test}"; python3 scripts/run_tests.py --run_s {test};\n')
 
+                            # declare the testing complete
+                            fp.write('echo "Tests complete.";\n')
+
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
                             os.chmod(out_file_name, 0o777)
