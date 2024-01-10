@@ -56,10 +56,10 @@ def test_run():
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING)
 
     # make sure of a successful return code and a json file
-    assert ret_val == 0 and os.path.isfile(os.path.join(run_dir, 'test_list.json'))
+    assert ret_val == 0 and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this invalid directory should fail
-    ret_val = staging.run('//', StagingType.FINAL_STAGING)
+    ret_val = staging.run(os.path.join(os.getenv('TEST_PATH'), '0'), StagingType.FINAL_STAGING)
 
     # ensure we got a failure code
     assert ret_val < 0
@@ -92,12 +92,12 @@ def test_file_creation():
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data)
 
     # check the result
-    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'consumer_test_list.json')) and os.path.isfile(
-        os.path.join(os.path.dirname(__file__), 'provider_test_list.json'))
+    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and os.path.isfile(
+        os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     # remove the files created
-    os.unlink(os.path.join(os.path.dirname(__file__), 'consumer_test_list.json'))
-    os.unlink(os.path.join(os.path.dirname(__file__), 'provider_test_list.json'))
+    os.unlink(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh'))
+    os.unlink(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     run_data: dict = {"request_data": {"workflow-type": "CORE", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
                                        "tests": [{"CONSUMER": ["test_ihelp", "test_ilocate", "test_ils"]}]}}
@@ -106,5 +106,5 @@ def test_file_creation():
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data)
 
     # check the result
-    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'consumer_test_list.json')) and not os.path.isfile(
-        os.path.join(os.path.dirname(__file__), 'provider_test_list.json'))
+    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and not os.path.isfile(
+        os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
