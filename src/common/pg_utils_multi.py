@@ -67,8 +67,6 @@ class PGUtilsMultiConnect:
             # get the connection string
             conn_config = self.get_conn_config(db_name)
 
-            self.logger.debug(f'Connection string: {conn_config}')
-
             # create a temporary tuple to get the discovery process started
             temp_tuple: namedtuple = self.db_info_tpl(db_name, conn_config, None)
 
