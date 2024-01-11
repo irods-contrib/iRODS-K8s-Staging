@@ -163,10 +163,10 @@ class Staging:
                             # write out each test
                             for test in tests:
                                 # create the test entry with some extra info
-                                fp.write(f'echo "Running {test}"; python3 scripts/run_tests.py --xml_output --run_s {test}; \n')
+                                fp.write(f'echo "Running {test}"; python3 scripts/run_tests.py --xml_output --run_s {test};\n')
 
                             # declare the testing complete
-                            fp.write(f'echo "Copying test results..."; cp ./test-reports/*.xml {run_dir}; echo "Tests complete.";\n')
+                            fp.write(f'echo "Copying test results..."; cp ./test-reports/*.xml {run_dir};\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
