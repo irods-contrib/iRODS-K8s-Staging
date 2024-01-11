@@ -49,7 +49,7 @@ if __name__ == '__main__':
         # missing 1 or more params
         ret_val: int = -3
 
-    # should we continue
+    # should we continue?
     if ret_val == 0:
         # do the staging
         ret_val = stage_obj.run(args.run_dir, args.step_type)
