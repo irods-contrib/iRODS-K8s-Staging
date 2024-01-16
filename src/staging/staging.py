@@ -96,8 +96,11 @@ class Staging:
 
             # did getting the data to go ok
             if run_data != -1:
+                # remove the run directory, ignore errors as it may not exist
+                shutil.rmtree(run_dir, ignore_errors=True)
+
                 # make the directory
-                os.makedirs(run_dir, exist_ok=True)
+                os.makedirs(run_dir)
 
                 # make sure the directory has the correct permissions
                 if sys.platform != 'win32':
