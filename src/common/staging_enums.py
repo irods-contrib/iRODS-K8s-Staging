@@ -34,6 +34,9 @@ class StagingTestExecutor(str, Enum):
     """
     # consumer tests
     CONSUMER = 'consumer'
+    CONSUMERSECONDARY = 'consumersecondary'
+    CONSUMERTERTIARY = 'consumertertiary'
 
     # provider tests
     PROVIDER = 'provider'
+    PROVIDERSECONDARY = 'providersecondary'
