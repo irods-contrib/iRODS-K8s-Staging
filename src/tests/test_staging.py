@@ -18,7 +18,7 @@ from src.staging.staging import Staging
 from src.common.staging_enums import StagingType, WorkflowTypeName
 
 
-#@pytest.mark.skip(reason="Local test only")
+@pytest.mark.skip(reason="Local test only")
 def test_run():
     """
     tests doing the normal operations for initial and final staging.
