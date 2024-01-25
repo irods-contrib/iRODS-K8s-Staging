@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # declare the command params
     parser.add_argument('--run_dir', default=None, help='The name of the run directory to use for the staging operations.', type=str, required=True)
     parser.add_argument('--step_type', default=None, help='The type of staging step, initial or final.', type=str, required=True)
-    parser.add_argument('--workflow_type', default=None, help='The type of workflow, CORE, TOPOLOGY, etc..', type=str, required=True)
+    parser.add_argument('--workflow_type', default='CORE', help='The type of workflow, CORE, TOPOLOGY, etc..', type=str, required=False)
 
     # collect the params
     args = parser.parse_args()
