@@ -17,7 +17,7 @@ from enum import Enum
 
 class StagingType(str, Enum):
     """
-    Class to represent the staging states
+    Class enums to represent the staging states
 
     """
     # initial staging
@@ -27,9 +27,20 @@ class StagingType(str, Enum):
     FINAL_STAGING = 'final'
 
 
+class WorkflowTypeName(str, Enum):
+    """
+    Class enums for the supervisor workflow names
+    """
+    CORE = 'CORE'
+    FEDERATION = 'FEDERATION'
+    PLUGIN = 'PLUGIN'
+    TOPOLOGY = 'TOPOLOGY'
+    UNIT = 'UNIT'
+
+
 class StagingTestExecutor(str, Enum):
     """
-    Class to specify the different test executor types
+    Class enums to specify the different test executor types
 
     """
     # consumer tests

@@ -16,7 +16,7 @@ import sys
 
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
-from src.common.staging_enums import StagingType, StagingTestExecutor
+from src.common.staging_enums import StagingType, StagingTestExecutor, WorkflowTypeName
 
 
 class Staging:
@@ -24,6 +24,7 @@ class Staging:
     Class that contains functionality for staging
 
     """
+
     def __init__(self):
         # get the app version
         self.app_version: str = os.getenv('APP_VERSION', 'Version number not set')
@@ -44,12 +45,13 @@ class Staging:
         # create a DB connection object
         self.db_info: PGImplementation = PGImplementation(db_names, _logger=self.logger)
 
-    def run(self, run_dir: str, step_type: StagingType) -> int:
+    def run(self, run_dir: str, step_type: StagingType, workflow_type: WorkflowTypeName = WorkflowTypeName.CORE) -> int:
         """
         Performs the requested type of staging operation.
 
         The supervisor will mount the /data directory for this component by default.
 
+        :param workflow_type:
         :param run_dir: The base path of the directory to use for the staging operations.
         :param step_type: The type of staging step, either 'initial' or 'final'
 
@@ -69,7 +71,7 @@ class Staging:
                 run_id: str = run_dir.split('/')[-1]
 
             # make the call to perform the op
-            ret_val = self.initial_staging(run_dir, run_id, step_type)
+            ret_val = self.initial_staging(run_dir, run_id, step_type, workflow_type)
         # else this a final stage step
         elif step_type == StagingType.FINAL_STAGING:
             # make the call to perform the op
@@ -78,13 +80,15 @@ class Staging:
         # return to the caller
         return ret_val
 
-    def initial_staging(self, run_dir: str, run_id: str, staging_type: StagingType) -> int:
+    def initial_staging(self, run_dir: str, run_id: str, staging_type: StagingType, workflow_type: WorkflowTypeName) -> int:
         """
         Performs the initial staging
 
         :param run_dir: The path of the directory to use for the staging operations.
         :param run_id: The ID of the supervisor run request.
         :param staging_type: The type of staging step, either 'initial' or 'final'
+        :param workflow_type: the type of workflow
+
         :return:
         """
         # init the return code
@@ -109,7 +113,7 @@ class Staging:
                 # if there are tests requested, create the files
                 if 'tests' in run_data['request_data']:
                     # create the test file(s)
-                    ret_val = self.create_test_files(run_dir, run_data)
+                    ret_val = self.create_test_files(run_dir, run_data, workflow_type)
             else:
                 # set the return value
                 ret_val = run_data
@@ -124,12 +128,14 @@ class Staging:
         # return the result to the caller
         return ret_val
 
-    def create_test_files(self, run_dir: str, run_data: json) -> int:
+    def create_test_files(self, run_dir: str, run_data: json, workflow_type: WorkflowTypeName) -> int:
         """
         Creates the files that contain the requested test executor and tests.
 
         :param run_dir: The path of the directory to use for the staging operations.
         :param run_data: The run data information from the supervisor
+        :param workflow_type: the type of workflow
+
         :return:
         """
         # init the return
@@ -138,10 +144,10 @@ class Staging:
         # init the filename storage
         out_file_name: str = 'empty'
 
-        self.logger.debug('Creating test files. run_dir: %s', run_dir)
+        self.logger.debug('Creating test files. run_dir: %s, workflow type: %s', run_dir, workflow_type)
 
         try:
-            # for each test list
+            # for each test in the list
             for item in run_data['request_data']['tests']:
                 # get the name of the executor type for the tests
                 executor = list(item)[0]
@@ -163,10 +169,34 @@ class Staging:
                             # write out the preamble
                             fp.write('#/bin/bash\ncd /var/lib/irods;\n')
 
-                            # write out each test
+                            # init the base command line.
+                            base_cmd_line: str = ''
+
+                            # init the topology test type
+                            topology_test_type: str = ''
+
+                            # get the command line
+                            if workflow_type == WorkflowTypeName.CORE:
+                                # assign the base command line
+                                base_cmd_line = 'python3 scripts/run_tests.py --xml_output'
+                            elif workflow_type == WorkflowTypeName.TOPOLOGY:
+                                # assign the base command line
+                                base_cmd_line = 'python3 scripts/run_tests.py --xml_output --hostnames TEST_HOST_NAMES --topology '
+
+                                # if this is a provider instance type
+                                if executor in [StagingTestExecutor.PROVIDER.name, StagingTestExecutor.PROVIDERSECONDARY.name]:
+                                    # get the topology test type
+                                    topology_test_type = 'icat'
+                                # else it is a consumer instance type
+                                elif executor in [StagingTestExecutor.CONSUMER.name, StagingTestExecutor.CONSUMERSECONDARY.name,
+                                                  StagingTestExecutor.CONSUMERTERTIARY.name]:
+                                    # get the topology test type
+                                    topology_test_type = 'resource'
+
+                            # write out each test listed in the request
                             for test in tests:
                                 # create the test entry with some extra info
-                                fp.write(f'echo "Running {test}"; python3 scripts/run_tests.py --xml_output --run_s {test};\n')
+                                fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
                             # declare the testing complete
                             fp.write(f'echo "Copying test results..."; cp ./test-reports/*.xml {run_dir};\n')
@@ -174,6 +204,14 @@ class Staging:
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
                             os.chmod(out_file_name, 0o777)
+
+                    else:
+                        self.logger.debug('WARNING: An executor was specified with no tests. executor name %s, run_dir: %s, workflow type: %s',
+                                          executor, run_dir, workflow_type.name)
+                else:
+                    self.logger.debug('WARNING: Invalid or missing executor. name: %s, run_dir: %s, workflow type: %s', executor, run_dir,
+                                      workflow_type.name)
+
         except Exception:
             # declare ready
             self.logger.exception('Exception: Error creating the test file: %s.', out_file_name)
