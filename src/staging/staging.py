@@ -59,6 +59,7 @@ class Staging:
         """
         # init the return value
         ret_val: int = 0
+
         # parse the run id differently in Windows environments
         if sys.platform == 'win32':
             # get the run ID
@@ -93,6 +94,8 @@ class Staging:
         # init the return code
         ret_val: int = 0
 
+        self.logger.info('Initial staging version %s start: run_dir: %s, workflow type: %s', self.app_version, run_dir, workflow_type)
+
         try:
             # try to make the call for records
             run_data: json = self.db_info.get_run_def(run_id)
@@ -124,6 +127,8 @@ class Staging:
             # set the exception error code
             ret_val = -99
 
+        self.logger.info('Initial staging complete: run_dir: %s, ret_val: %s', run_dir, ret_val)
+
         # return the result to the caller
         return ret_val
 
@@ -143,7 +148,7 @@ class Staging:
         # init the filename storage
         out_file_name: str = 'empty'
 
-        self.logger.debug('Creating test files. run_dir: %s, workflow type: %s', run_dir, workflow_type)
+        self.logger.info('Creating test files. run_dir: %s, workflow type: %s', run_dir, workflow_type)
 
         try:
             # for each test in the list
@@ -233,6 +238,8 @@ class Staging:
         # init the return code
         ret_val: int = 0
 
+        self.logger.info('Final staging version %s start: run_dir: %s, workflow type: %s', self.app_version, run_dir, workflow_type)
+
         try:
             # does the directory exist?
             if os.path.isdir(run_dir):
@@ -261,6 +268,8 @@ class Staging:
 
             # set the exception error code
             ret_val = -99
+
+        self.logger.info('Final staging complete: run_dir: %s, ret_val: %s', run_dir, ret_val)
 
         # return the result to the caller
         return ret_val
