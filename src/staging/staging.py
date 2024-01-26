@@ -59,23 +59,22 @@ class Staging:
         """
         # init the return value
         ret_val: int = 0
+        # parse the run id differently in Windows environments
+        if sys.platform == 'win32':
+            # get the run ID
+            run_id: str = run_dir.split('\\')[-1]
+        else:
+            # get the run ID
+            run_id: str = run_dir.split('/')[-1]
 
         # is this an initial stage step?
         if step_type == StagingType.INITIAL_STAGING:
-            # parse the run id differently in Windows environments
-            if sys.platform == 'win32':
-                # get the run ID
-                run_id: str = run_dir.split('\\')[-1]
-            else:
-                # get the run ID
-                run_id: str = run_dir.split('/')[-1]
-
             # make the call to perform the op
             ret_val = self.initial_staging(run_dir, run_id, step_type, workflow_type)
         # else this a final stage step
         elif step_type == StagingType.FINAL_STAGING:
             # make the call to perform the op
-            ret_val = self.final_staging(run_dir, step_type)
+            ret_val = self.final_staging(run_dir, run_id, step_type)
 
         # return to the caller
         return ret_val
@@ -222,11 +221,12 @@ class Staging:
         # return to the caller
         return ret_val
 
-    def final_staging(self, run_dir: str, staging_type: StagingType) -> int:
+    def final_staging(self, run_dir: str, run_id: str, staging_type: StagingType) -> int:
         """
         Performs the initial staging
 
         :param run_dir: The path of the directory to use for the staging operations.
+        :param run_id: The ID of the supervisor run request.
         :param staging_type: The type of staging step, either 'initial' or 'final'
         :return:
         """
@@ -234,12 +234,30 @@ class Staging:
         ret_val: int = 0
 
         try:
-            # remove the run directory
-            shutil.rmtree(run_dir)
+            # does the directory exist?
+            if os.path.isdir(run_dir):
+                # try to make the call for records
+                run_data: json = self.db_info.get_run_def(run_id)
 
+                # did getting the data to go ok
+                if run_data != -1:
+                    # get the grouping value from the request
+                    run_group: str = run_data['request_group']
+
+                    # get the target directory
+                    dest_dir = run_dir.replace(run_id, run_group)
+
+                    # remove the dest directory
+                    shutil.rmtree(dest_dir, ignore_errors=True)
+
+                    # move the source directory to the dest
+                    shutil.move(run_dir, dest_dir)
+            else:
+                # set a failure return code
+                ret_val = -96
         except Exception:
             # declare ready
-            self.logger.exception('Exception: The iRODS K8s "%s" staging request for run directory %s failed.', staging_type, run_dir)
+            self.logger.exception('Exception: The iRODS K8s "%s" final staging request for run directory %s failed.', staging_type, run_dir)
 
             # set the exception error code
             ret_val = -99

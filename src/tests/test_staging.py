@@ -100,6 +100,7 @@ def test_run():
     assert ret_val == 0 and not os.path.isdir(run_dir)
 
 
+@pytest.mark.skip(reason="Local test only")
 def test_file_creation():
     """
     tests the creation of a file that contains the requested tests
