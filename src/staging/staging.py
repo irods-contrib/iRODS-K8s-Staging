@@ -238,7 +238,7 @@ class Staging:
         # init the return code
         ret_val: int = 0
 
-        self.logger.info('Final staging version %s start: run_dir: %s, workflow type: %s', self.app_version, run_dir, workflow_type)
+        self.logger.info('Final staging version %s start: run_dir: %s', self.app_version, run_dir)
 
         try:
             # does the directory exist?
