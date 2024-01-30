@@ -122,7 +122,8 @@ def test_file_creation():
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
 
     # check the result
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and os.path.isfile(
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(
+        os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and os.path.isfile(
         os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     # remove the files created
@@ -136,5 +137,6 @@ def test_file_creation():
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
 
     # check the result
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and not os.path.isfile(
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(
+        os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and not os.path.isfile(
         os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
