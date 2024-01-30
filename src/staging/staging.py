@@ -16,8 +16,7 @@ import sys
 
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
-from src.common.staging_enums import StagingType, StagingTestExecutor, WorkflowTypeName
-
+from src.common.staging_enums import StagingType, StagingTestExecutor, WorkflowTypeName, ReturnCodes
 
 class Staging:
     """
@@ -58,7 +57,7 @@ class Staging:
         :return:
         """
         # init the return value
-        ret_val: int = 0
+        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
         # parse the run id differently in Windows environments
         if sys.platform == 'win32':
@@ -92,7 +91,7 @@ class Staging:
         :return:
         """
         # init the return code
-        ret_val: int = 0
+        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
         self.logger.info('Initial staging version %s start: run_dir: %s, workflow type: %s', self.app_version, run_dir, workflow_type)
 
@@ -125,7 +124,7 @@ class Staging:
             self.logger.exception('Exception: The iRODS K8s "%s" staging request for run directory %s failed.', staging_type, run_dir)
 
             # set the exception error code
-            ret_val = -99
+            ret_val = ReturnCodes.EXCEPTION_RUN_PROCESSING
 
         self.logger.info('Initial staging complete: run_dir: %s, ret_val: %s', run_dir, ret_val)
 
@@ -143,7 +142,7 @@ class Staging:
         :return:
         """
         # init the return
-        ret_val: int = 0
+        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
         # init the filename storage
         out_file_name: str = 'empty'
@@ -221,7 +220,7 @@ class Staging:
             self.logger.exception('Exception: Error creating the test file: %s.', out_file_name)
 
             # set the return
-            ret_val = -98
+            ret_val = ReturnCodes.ERROR_TEST_FILE
 
         # return to the caller
         return ret_val
@@ -236,7 +235,7 @@ class Staging:
         :return:
         """
         # init the return code
-        ret_val: int = 0
+        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
         self.logger.info('Final staging version %s start: run_dir: %s', self.app_version, run_dir)
 
@@ -247,7 +246,7 @@ class Staging:
                 run_data: json = self.db_info.get_run_def(run_id)
 
                 # did getting the data to go ok
-                if run_data != -1:
+                if run_data != ReturnCodes.DB_ERROR:
                     # get the grouping value from the request
                     run_group: str = run_data['request_group']
 
@@ -260,14 +259,14 @@ class Staging:
                     # move the source directory to the dest
                     shutil.move(run_dir, dest_dir)
             else:
-                # set a failure return code
-                ret_val = -96
+                # set a failure return code for no run directory
+                ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:
             # declare ready
             self.logger.exception('Exception: The iRODS K8s "%s" final staging request for run directory %s failed.', staging_type, run_dir)
 
             # set the exception error code
-            ret_val = -99
+            ret_val = ReturnCodes.EXCEPTION_RUN_PROCESSING
 
         self.logger.info('Final staging complete: run_dir: %s, ret_val: %s', run_dir, ret_val)
 

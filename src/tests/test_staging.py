@@ -15,7 +15,7 @@ import os
 import pytest
 
 from src.staging.staging import Staging
-from src.common.staging_enums import StagingType, WorkflowTypeName
+from src.common.staging_enums import StagingType, WorkflowTypeName, ReturnCodes
 
 
 @pytest.mark.skip(reason="Local test only")
@@ -28,7 +28,7 @@ def test_run():
     :return:
     """
     # init the return value
-    ret_val: int = 0
+    ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
     # create the target class
     staging = Staging()
@@ -43,7 +43,7 @@ def test_run():
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # ensure we got a failure code
-    assert ret_val < 0
+    assert ret_val == ReturnCodes.DB_ERROR
 
     # set a valid run ID
     run_id: str = '3'
@@ -55,31 +55,31 @@ def test_run():
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.TOPOLOGY)
 
     # make sure of a successful return code and a json file
-    assert ret_val == 0 and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
 
     # make sure of a successful return code and a missing json file
-    assert ret_val == 0 and not os.path.isdir(run_dir)
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
 
     # make the call to do an initial stage
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # make sure of a successful return code and a json file
-    assert ret_val == 0 and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this is an invalid directory and should fail
     ret_val = staging.run(os.path.join(os.getenv('TEST_PATH'), '0'), StagingType.FINAL_STAGING, WorkflowTypeName.CORE)
 
     # ensure we got a failure code
-    assert ret_val < 0
+    assert ret_val == ReturnCodes.ERROR_NO_RUN_DIR
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
 
     # make sure of a successful return code and a missing json file
-    assert ret_val == 0 and not os.path.isdir(run_dir)
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
 
     # set a valid run ID. however, although this one has an executor specified it has no tests listed
     run_id: str = '9'
@@ -91,13 +91,13 @@ def test_run():
     ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # make sure of a successful return code and a json file
-    assert ret_val == 0 and not os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
 
     # make sure of a successful return code and a missing json file
-    assert ret_val == 0 and not os.path.isdir(run_dir)
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
 
 
 @pytest.mark.skip(reason="Local test only")
@@ -108,7 +108,7 @@ def test_file_creation():
     :return:
     """
     # init the return value
-    ret_val: int = 0
+    ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
     # create the target class
     staging = Staging()
@@ -122,7 +122,7 @@ def test_file_creation():
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
 
     # check the result
-    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and os.path.isfile(
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and os.path.isfile(
         os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     # remove the files created
@@ -136,5 +136,5 @@ def test_file_creation():
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
 
     # check the result
-    assert ret_val == 0 and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and not os.path.isfile(
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and not os.path.isfile(
         os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))

@@ -51,3 +51,14 @@ class StagingTestExecutor(str, Enum):
     # provider tests
     PROVIDER = 'provider'
     PROVIDERSECONDARY = 'providersecondary'
+
+
+class ReturnCodes(int, Enum):
+    """
+    Class enum for error codes
+    """
+    EXIT_CODE_SUCCESS = 0
+    DB_ERROR = -1
+    EXCEPTION_RUN_PROCESSING = -99
+    ERROR_TEST_FILE = -98
+    ERROR_NO_RUN_DIR = -97
