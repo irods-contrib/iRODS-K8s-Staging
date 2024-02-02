@@ -203,11 +203,11 @@ class Staging:
                                 fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
                             # declare the testing complete
-                            fp.write(f'echo "Copying test results..."; cp ./test-reports/*.xml {run_dir};\n')
+                            fp.write(f'echo "Copying /var/lib/irods/test-report/ results..."; cp ./test-reports/*.xml {run_dir};\n')
 
-                            # save these directories for more forensics
-                            fp.write(f'echo "Copying test results..."; cp -r /var/log/irods/ /data/{run_dir}/var/log/irods;\n')
-                            fp.write(f'echo "Copying test results..."; cp -r /var/lib/irods/log/ /data/{run_dir}/var/lib/irods/log;\n')
+                            # save these directories for extended forensics
+                            fp.write(f'echo "Copying /var/lib/irods/log dir..."; mv ./log {run_dir};\n')
+                            fp.write(f'echo "Copying /var/log/irods/ dir..."; mv /var/log/irods/ {run_dir};\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
