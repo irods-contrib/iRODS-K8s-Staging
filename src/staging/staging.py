@@ -18,6 +18,7 @@ from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
 from src.common.staging_enums import StagingType, StagingTestExecutor, WorkflowTypeName, ReturnCodes
 
+
 class Staging:
     """
     Class that contains functionality for staging
@@ -203,6 +204,10 @@ class Staging:
 
                             # declare the testing complete
                             fp.write(f'echo "Copying test results..."; cp ./test-reports/*.xml {run_dir};\n')
+
+                            # save these directories for more forensics
+                            fp.write(f'echo "Copying test results..."; cp -r /var/log/irods/ /data/{run_dir}/var/log/irods;\n')
+                            fp.write(f'echo "Copying test results..."; cp -r /var/lib/irods/log/ /data/{run_dir}/var/lib/irods/log;\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
