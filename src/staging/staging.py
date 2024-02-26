@@ -257,9 +257,6 @@ class Staging:
 
                     # move the source directory to the dest
                     shutil.move(run_dir, dest_dir)
-            else:
-                # set a failure return code for no run directory
-                ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:
             # declare ready
             self.logger.exception('Exception: The iRODS K8s "%s" final staging request for run directory %s failed.', staging_type, run_dir)
