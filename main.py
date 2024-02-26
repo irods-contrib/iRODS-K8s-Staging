@@ -30,6 +30,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     # declare the command params
+    parser.add_argument('--run_id', default=None, help='The run identifier.', type=str, required=True)
     parser.add_argument('--run_dir', default=None, help='The name of the run directory to use for the staging operations.', type=str, required=True)
     parser.add_argument('--step_type', default=None, help='The type of staging step, initial or final.', type=str, required=True)
     parser.add_argument('--workflow_type', default='CORE', help='The type of workflow, CORE, TOPOLOGY, etc..', type=str, required=False)
@@ -41,7 +42,7 @@ if __name__ == '__main__':
     ret_val: int = 0
 
     # validate the inputs
-    if args.run_dir != '' and args.step_type != '' and args.workflow_type != '':
+    if args.run_id != '' and args.run_id != '' and args.step_type != '' and args.workflow_type != '':
         try:
             # check to make sure we got a legit staging and workflow types
             # these will throw exceptions if they are not
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     # should we continue?
     if ret_val == 0:
         # do the staging
-        ret_val = stage_obj.run(args.run_dir, args.step_type, args.workflow_type)
+        ret_val = stage_obj.run(args.run_id, args.run_dir, args.step_type, args.workflow_type)
 
     # exit with the final exit code
     sys.exit(ret_val)

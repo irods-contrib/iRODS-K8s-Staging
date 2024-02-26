@@ -37,10 +37,10 @@ def test_run():
     run_id: str = '0'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'grp3')
 
     # make the call to do an initial stage with an invalid run id
-    ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
+    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # ensure we got a failure code
     assert ret_val == ReturnCodes.DB_ERROR
@@ -49,58 +49,58 @@ def test_run():
     run_id: str = '3'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'grp3')
 
     # make the call to do an initial stage
-    ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.TOPOLOGY)
+    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.TOPOLOGY)
 
     # make sure of a successful return code and a json file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
-    ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
+    ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
 
     # make sure of a successful return code and a missing json file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
 
     # make the call to do an initial stage
-    ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
+    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # make sure of a successful return code and a json file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this is an invalid directory and should fail
-    ret_val = staging.run(os.path.join(os.getenv('TEST_PATH'), '0'), StagingType.FINAL_STAGING, WorkflowTypeName.CORE)
+    ret_val = staging.run(run_id, os.path.join(os.getenv('TEST_PATH'), '0'), StagingType.FINAL_STAGING, WorkflowTypeName.CORE)
 
     # ensure we got a failure code
     assert ret_val == ReturnCodes.ERROR_NO_RUN_DIR
 
     # make the call to do a final stage. this dir was created above so it should be removed
-    ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
+    ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
 
     # make sure of a successful return code and a missing json file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
 
-    # set a valid run ID. however, although this one has an executor specified it has no tests listed
+    # set a valid run ID. however, although this one has an executor specified it has no tests listed in the DB
     run_id: str = '9'
 
     # set up the test directory
     run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
 
     # make the call to do an initial stage
-    ret_val = staging.run(run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
+    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # make sure of a successful return code and a json file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
-    ret_val = staging.run(run_dir, StagingType.FINAL_STAGING)
+    ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
 
     # make sure of a successful return code and a missing json file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
 
 
-#@pytest.mark.skip(reason="Local test only")
+@pytest.mark.skip(reason="Local test only")
 def test_file_creation():
     """
     tests the creation of a file that contains the requested tests

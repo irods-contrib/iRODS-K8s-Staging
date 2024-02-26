@@ -45,47 +45,40 @@ class Staging:
         # create a DB connection object
         self.db_info: PGImplementation = PGImplementation(db_names, _logger=self.logger)
 
-    def run(self, run_dir: str, step_type: StagingType, workflow_type: WorkflowTypeName = WorkflowTypeName.CORE) -> int:
+    def run(self, run_id: str, run_dir: str, step_type: StagingType, workflow_type: WorkflowTypeName = WorkflowTypeName.CORE) -> int:
         """
         Performs the requested type of staging operation.
 
         The supervisor will mount the /data directory for this component by default.
 
-        :param workflow_type:
+        :param run_id: The id of the run.
         :param run_dir: The base path of the directory to use for the staging operations.
         :param step_type: The type of staging step, either 'initial' or 'final'
+        :param workflow_type:
 
         :return:
         """
         # init the return value
         ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
-        # parse the run id differently in Windows environments
-        if sys.platform == 'win32':
-            # get the run ID
-            run_id: str = run_dir.split('\\')[-1]
-        else:
-            # get the run ID
-            run_id: str = run_dir.split('/')[-1]
-
         # is this an initial stage step?
         if step_type == StagingType.INITIAL_STAGING:
             # make the call to perform the op
-            ret_val = self.initial_staging(run_dir, run_id, step_type, workflow_type)
+            ret_val = self.initial_staging(run_id, run_dir, step_type, workflow_type)
         # else this a final stage step
         elif step_type == StagingType.FINAL_STAGING:
             # make the call to perform the op
-            ret_val = self.final_staging(run_dir, run_id, step_type)
+            ret_val = self.final_staging(run_id, run_dir, step_type)
 
         # return to the caller
         return ret_val
 
-    def initial_staging(self, run_dir: str, run_id: str, staging_type: StagingType, workflow_type: WorkflowTypeName) -> int:
+    def initial_staging(self, run_id: str, run_dir: str, staging_type: StagingType, workflow_type: WorkflowTypeName) -> int:
         """
         Performs the initial staging
 
-        :param run_dir: The path of the directory to use for the staging operations.
         :param run_id: The ID of the supervisor run request.
+        :param run_dir: The path of the directory to use for the staging operations.
         :param staging_type: The type of staging step, either 'initial' or 'final'
         :param workflow_type: the type of workflow
 
@@ -94,7 +87,8 @@ class Staging:
         # init the return code
         ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
-        self.logger.info('Initial staging version %s start: run_dir: %s, workflow type: %s', self.app_version, run_dir, workflow_type)
+        self.logger.info('Initial staging version %s start: run_id: %s, run_dir: %s, workflow type: %s', self.app_version, run_id, run_dir,
+                         workflow_type)
 
         try:
             # try to make the call for records
@@ -230,7 +224,7 @@ class Staging:
         # return to the caller
         return ret_val
 
-    def final_staging(self, run_dir: str, run_id: str, staging_type: StagingType) -> int:
+    def final_staging(self, run_id: str, run_dir: str, staging_type: StagingType) -> int:
         """
         Performs the initial staging
 
