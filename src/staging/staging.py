@@ -201,7 +201,11 @@ class Staging:
 
                             # save these directories for extended forensics
                             fp.write(f'echo "Moving /var/lib/irods/log dir..."; mv ./log {run_dir};\n')
-                            fp.write(f'echo "Moving /var/log/irods/ dir..."; mv /var/log/irods/ {run_dir};\n')
+
+                            # this directory may or may not exist
+                            fp.write(f'if [-f /var/log/irods ]; then\n')
+                            fp.write(f'  echo "Moving /var/log/irods/ dir..."; mv /var/log/irods/ {run_dir};\n')
+                            fp.write(f'fi\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
@@ -244,7 +248,7 @@ class Staging:
                 # try to make the call for records
                 run_data: json = self.db_info.get_run_def(run_id)
 
-                # did getting the data to go ok
+                # did we get the run definition?
                 if run_data != ReturnCodes.DB_ERROR:
                     # get the grouping value from the request
                     run_group: str = run_data['request_group']
