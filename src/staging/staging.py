@@ -196,14 +196,14 @@ class Staging:
                                 # create the test entry with some extra info
                                 fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
-                            # declare the testing complete
-                            fp.write(f'echo "Copying /var/lib/irods/test-report/ results..."; cp ./test-reports/*.xml {run_dir};\n')
-
                             # save the log directory for extended forensics
-                            fp.write(f'echo "Moving /var/lib/irods/log dir..."; mv ./log {run_dir};\n')
+                            fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/;\n')
 
                             # this directory may or may not exist
-                            fp.write(f'echo "Moving /var/log/irods/ dir..."; mv /var/log/irods/ {run_dir};\n')
+                            fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/;\n')
+
+                            # this directory may or may not exist
+                            fp.write(f'echo "Making run dir global R/W"; chmod -R 777 {run_dir};\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
