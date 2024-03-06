@@ -195,11 +195,14 @@ class Staging:
                                 # create the test entry with some extra info
                                 fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
+                            # create the results directory
+                            fp.write(f'echo "Creating the results dir {run_dir}/{executor}..."; mkdir {run_dir}/{executor}')
+
                             # save the log directory for extended forensics
-                            fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/;\n')
+                            fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/{executor}/;\n')
 
                             # this directory may or may not exist
-                            fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/;\n')
+                            fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/{executor}/;\n')
 
                             # this directory may or may not exist
                             fp.write(f'echo "Making run dir global R/W"; chmod -R 777 {run_dir};\n')
