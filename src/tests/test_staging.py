@@ -14,7 +14,7 @@ from src.staging.staging import Staging
 from src.common.staging_enums import StagingType, WorkflowTypeName, ReturnCodes
 
 
-@pytest.mark.skip(reason="Local test only")
+#@pytest.mark.skip(reason="Local test only")
 def test_run():
     """
     tests doing the normal operations for initial and final staging.
@@ -42,7 +42,7 @@ def test_run():
     assert ret_val == ReturnCodes.DB_ERROR
 
     # set a valid run ID
-    run_id: str = '3'
+    run_id: str = '68'
 
     # set up the test directory
     run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'grp3')
@@ -50,20 +50,20 @@ def test_run():
     # make the call to do an initial stage
     ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.TOPOLOGY)
 
-    # make sure of a successful return code and a json file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
+    # make sure of a successful return code and a bash file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
 
-    # make sure of a successful return code and a missing json file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
+    # make sure of a successful return code and a missing file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
     # make the call to do an initial stage
     ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
-    # make sure of a successful return code and a json file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
+    # make sure of a successful return code and a bash file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this is an invalid directory and should fail
     ret_val = staging.run(run_id, os.path.join(os.getenv('TEST_PATH'), '0'), StagingType.FINAL_STAGING, WorkflowTypeName.CORE)
@@ -74,11 +74,11 @@ def test_run():
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
 
-    # make sure of a successful return code and a missing json file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
+    # make sure of a successful return code and a missing bash file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
     # set a valid run ID. however, although this one has an executor specified it has no tests listed in the DB
-    run_id: str = '9'
+    run_id: str = '67'
 
     # set up the test directory
     run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
@@ -86,14 +86,14 @@ def test_run():
     # make the call to do an initial stage
     ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
-    # make sure of a successful return code and a json file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isfile(os.path.join(run_dir, 'PROVIDER_test_list.sh'))
+    # make sure of a successful return code and a bash file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'PROVIDER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
 
-    # make sure of a successful return code and a missing json file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and not os.path.isdir(run_dir)
+    # make sure of a successful return code and a missing bash file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
 
 @pytest.mark.skip(reason="Local test only")

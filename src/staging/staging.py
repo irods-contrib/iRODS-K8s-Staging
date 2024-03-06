@@ -87,6 +87,9 @@ class Staging:
                          workflow_type)
 
         try:
+            # create the full run directory name
+            run_dir = os.path.join(run_dir, run_id)
+
             # try to make the call for records
             run_data: json = self.db_info.get_run_def(run_id)
 
@@ -224,7 +227,7 @@ class Staging:
 
     def final_staging(self, run_id: str, run_dir: str, staging_type: StagingType) -> int:
         """
-        Performs the initial staging
+        Performs the final staging
 
         :param run_dir: The path of the directory to use for the staging operations.
         :param run_id: The ID of the supervisor run request.
@@ -234,6 +237,9 @@ class Staging:
         # init the return code
         ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
+        # create the full run directory name
+        run_dir = os.path.join(run_dir, run_id)
+
         self.logger.info('Final staging version %s start: run_dir: %s', self.app_version, run_dir)
 
         try:
@@ -242,7 +248,8 @@ class Staging:
                 self.logger.info('Run dir exists. run_dir: %s', run_dir)
 
                 # do more things here.
-
+            else:
+                ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:
             # declare ready
             self.logger.exception('Exception: The iRODS K8s "%s" final staging request for run directory %s failed.', staging_type, run_dir)
