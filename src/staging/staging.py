@@ -196,7 +196,7 @@ class Staging:
                                 fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
                             # create the results directory
-                            fp.write(f'echo "Creating the results dir {run_dir}/{executor}..."; mkdir {run_dir}/{executor}')
+                            fp.write(f'echo "Creating the results dir {run_dir}/{executor}..."; mkdir {run_dir}/{executor};\n')
 
                             # save the log directory for extended forensics
                             fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/{executor}/;\n')
