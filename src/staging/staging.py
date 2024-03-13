@@ -205,7 +205,7 @@ class Staging:
                             fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/{executor}/;\n')
 
                             # this directory may or may not exist
-                            fp.write(f'echo "Making run dir global R/W"; chmod -R 777 {run_dir};\n')
+                            # fp.write(f'echo "Making run dir global R/W"; chmod -R 777 {run_dir};\n')
 
                         # make sure the file has the correct permissions
                         if sys.platform != 'win32':
