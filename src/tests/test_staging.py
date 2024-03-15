@@ -109,10 +109,11 @@ def test_file_creation():
     # create the target class
     staging = Staging()
 
+    tests_data = [{"PROVIDER": ["test_auth.Test_Auth"]}, {"CONSUMER": ["test_auth.test_iinit"]}]
+
     # create a test list
     run_data: dict = {"request_data": {"workflow-type": "CORE", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
-                                       "tests": [{"CONSUMER": ["test_ihelp", "test_ilocate", "test_ils"]},
-                                                 {"PROVIDER": ["test_ihelp", "test_ilocate", "test_ils"]}]}}
+                                       "tests": tests_data}}
 
     # make the call
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
