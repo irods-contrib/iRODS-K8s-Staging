@@ -144,79 +144,74 @@ class Staging:
         self.logger.info('Creating test files. run_dir: %s, workflow type: %s', run_dir, workflow_type)
 
         try:
-            # for each test in the list
-            for item in run_data['request_data']['tests']:
-                # get the name of the executor type for the tests
-                executor = list(item)[0]
+            # get the test executor run location
+            executor = next(iter(run_data['request_data']['tests']))
 
-                # is this a legit executor?
-                if executor in StagingTestExecutor.__members__:
-                    # get the list of tests for this executor
-                    tests = list(item.values())[0]
+            # is this a legit executor?
+            if executor in StagingTestExecutor.__members__:
+                # get the list of tests for this executor
+                tests = run_data['request_data']['tests'][executor]
 
-                    # check the list of tests
-                    if len(tests) > 0:
-                        # generate the output path/file name
-                        out_file_name = os.path.join(run_dir, f'{executor}_test_list.sh')
+                # check the list of tests
+                if len(tests) > 0:
+                    # generate the output path/file name
+                    out_file_name = os.path.join(run_dir, f'{executor}_test_list.sh')
 
-                        # write out the data
-                        with open(out_file_name, 'w', encoding='utf-8') as fp:
-                            self.logger.debug('Writing to %s', out_file_name)
+                    # write out the data
+                    with open(out_file_name, 'w', encoding='utf-8') as fp:
+                        self.logger.debug('Writing to %s', out_file_name)
 
-                            # write out the preamble
-                            fp.write('#/bin/bash\ncd /var/lib/irods;\n')
+                        # write out the preamble
+                        fp.write('#/bin/bash\ncd /var/lib/irods;\n')
 
-                            # init the base command line.
-                            base_cmd_line: str = ''
+                        # init the base command line.
+                        base_cmd_line: str = ''
 
-                            # init the topology test type
-                            topology_test_type: str = ''
+                        # init the topology test type
+                        topology_test_type: str = ''
 
-                            # get the command line
-                            if workflow_type == WorkflowTypeName.CORE:
-                                # assign the base command line
-                                base_cmd_line = 'python3 scripts/run_tests.py --xml_output'
-                            elif workflow_type == WorkflowTypeName.TOPOLOGY:
-                                # assign the base command line
-                                base_cmd_line = 'python3 scripts/run_tests.py --xml_output --hostnames TEST_HOST_NAMES --topology '
+                        # get the command line
+                        if workflow_type == WorkflowTypeName.CORE:
+                            # assign the base command line
+                            base_cmd_line = 'python3 scripts/run_tests.py --xml_output'
+                        elif workflow_type == WorkflowTypeName.TOPOLOGY:
+                            # assign the base command line
+                            base_cmd_line = 'python3 scripts/run_tests.py --xml_output --hostnames TEST_HOST_NAMES --topology '
 
-                                # if this is a provider instance type
-                                if executor in [StagingTestExecutor.PROVIDER.name, StagingTestExecutor.PROVIDERSECONDARY.name]:
-                                    # get the topology test type
-                                    topology_test_type = 'icat'
-                                # else it is a consumer instance type
-                                elif executor in [StagingTestExecutor.CONSUMER.name, StagingTestExecutor.CONSUMERSECONDARY.name,
-                                                  StagingTestExecutor.CONSUMERTERTIARY.name]:
-                                    # get the topology test type
-                                    topology_test_type = 'resource'
+                            # if this is a provider instance type
+                            if executor in [StagingTestExecutor.PROVIDER.name, StagingTestExecutor.PROVIDERSECONDARY.name]:
+                                # get the topology test type
+                                topology_test_type = 'icat'
+                            # else it is a consumer instance type
+                            elif executor in [StagingTestExecutor.CONSUMER.name, StagingTestExecutor.CONSUMERSECONDARY.name,
+                                              StagingTestExecutor.CONSUMERTERTIARY.name]:
+                                # get the topology test type
+                                topology_test_type = 'resource'
 
-                            # write out each test listed in the request
-                            for test in tests:
-                                # create the test entry with some extra info
-                                fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
+                        # write out each test listed in the request
+                        for test in tests:
+                            # create the test entry with some extra info
+                            fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
-                            # create the results directory
-                            fp.write(f'echo "Creating the results dir {run_dir}/{executor}..."; mkdir {run_dir}/{executor};\n')
+                        # create the results directory
+                        fp.write(f'echo "Creating the results dir {run_dir}/{executor}..."; mkdir {run_dir}/{executor};\n')
 
-                            # save the log directory for extended forensics
-                            fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/{executor}/;\n')
+                        # save the log directory for extended forensics
+                        fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/{executor}/;\n')
 
-                            # this directory may or may not exist
-                            fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/{executor}/;\n')
+                        # this directory may or may not exist
+                        fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/{executor}/;\n')
 
-                            # this directory may or may not exist
-                            # fp.write(f'echo "Making run dir global R/W"; chmod -R 777 {run_dir};\n')
+                    # make sure the file has the correct permissions
+                    if sys.platform != 'win32':
+                        os.chmod(out_file_name, 0o777)
 
-                        # make sure the file has the correct permissions
-                        if sys.platform != 'win32':
-                            os.chmod(out_file_name, 0o777)
-
-                    else:
-                        self.logger.debug('WARNING: An executor was specified with no tests. executor name %s, run_dir: %s, workflow type: %s',
-                                          executor, run_dir, workflow_type.name)
                 else:
-                    self.logger.debug('WARNING: Invalid or missing executor. name: %s, run_dir: %s, workflow type: %s', executor, run_dir,
-                                      workflow_type.name)
+                    self.logger.debug('WARNING: An executor was specified with no tests. executor name %s, run_dir: %s, workflow type: %s',
+                                      executor, run_dir, workflow_type.name)
+            else:
+                self.logger.debug('WARNING: Invalid or missing executor. name: %s, run_dir: %s, workflow type: %s', executor, run_dir,
+                                  workflow_type.name)
 
         except Exception:
             # declare ready

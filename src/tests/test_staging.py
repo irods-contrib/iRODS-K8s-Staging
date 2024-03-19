@@ -14,7 +14,7 @@ from src.staging.staging import Staging
 from src.common.staging_enums import StagingType, WorkflowTypeName, ReturnCodes
 
 
-@pytest.mark.skip(reason="Local test only")
+#@pytest.mark.skip(reason="Local test only")
 def test_run():
     """
     tests doing the normal operations for initial and final staging.
@@ -96,7 +96,7 @@ def test_run():
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
 
-@pytest.mark.skip(reason="Local test only")
+#@pytest.mark.skip(reason="Local test only")
 def test_file_creation():
     """
     tests the creation of a file that contains the requested tests
@@ -109,31 +109,41 @@ def test_file_creation():
     # create the target class
     staging = Staging()
 
-    tests_data = [{"PROVIDER": ["test_auth.Test_Auth"]}, {"CONSUMER": ["test_auth.test_iinit"]}]
+    tests_data = {"CONSUMER": ["test_auth.test_ihelp"]}
 
-    # create a test list
-    run_data: dict = {"request_data": {"workflow-type": "CORE", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
+    # create a topology test list with only a provider test declared
+    run_data: dict = {"request_data": {"workflow-type": "TOPOLOGY", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
                                        "tests": tests_data}}
 
     # make the call
-    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
+    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.TOPOLOGY)
 
     # check the result
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(
-        os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and os.path.isfile(
-        os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh'))
+
+    tests_data = {"PROVIDER": ["test_auth.test_ihelp"]}
+
+    # create a topology test list with only a provider test declared
+    run_data: dict = {"request_data": {"workflow-type": "TOPOLOGY", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
+                                       "tests": tests_data}}
+
+    # make the call
+    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.TOPOLOGY)
+
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     # remove the files created
     os.unlink(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh'))
     os.unlink(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     run_data: dict = {"request_data": {"workflow-type": "CORE", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
-                                       "tests": [{"CONSUMER": ["test_ihelp", "test_ilocate", "test_ils"]}]}}
+                                       "tests": {"PROVIDER": ["test_ihelp", "test_ilocate", "test_ils"]}}}
 
     # make the call
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
 
     # check the result
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(
-        os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')) and not os.path.isfile(
-        os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
+
+    # remove the files created
+    os.unlink(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
