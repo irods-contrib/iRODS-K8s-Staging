@@ -29,3 +29,8 @@ The iRODS-K8s Staging product is a microservice used in the iRODS K8s Supervisor
 There are GitHub actions to maintain code quality in this repo:
  - Pylint (minimum score of 10/10 to pass),
  - Build/publish a Docker image.
+
+### How to build the Docker image for this product
+
+ - docker build --build-arg APP_VERSION=Test -f Dockerfile -t irods-k8s-settings:latest . 
+ - This image must be placed in a container image registry and referenced in the Job supervisor config DB table or using the Supervisor settings application.
