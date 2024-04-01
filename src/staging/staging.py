@@ -220,9 +220,7 @@ class Staging:
                         archive_file = os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id']), f'{executor}.tar.gz')
 
                         # compress the directory into the package directory
-                        fp.write(
-                            f"echo 'Zip and Tar the results dir {data_path} into {archive_file}'; tar -zcvf {archive_file} "
-                            f"{data_path};\n")
+                        fp.write(f'echo "Zip and Tar the results dir {data_path} into {archive_file}"; tar -zcvf "{archive_file}" {data_path};\n')
 
                     # make sure the file has the correct permissions
                     if sys.platform != 'win32':
