@@ -5,3 +5,5 @@
 /src/common/__pycache__/
 /src/staging/__pycache__/
 /src/common/iRODS.Staging.log
+/src/tests/CONSUMER_test_list.sh
+/src/tests/PROVIDER_test_list.sh
