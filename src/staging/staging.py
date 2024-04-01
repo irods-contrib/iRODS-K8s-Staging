@@ -223,10 +223,10 @@ class Staging:
                         fp.write(f'echo "Creating the archive directory {archive_dir}..."; mkdir -p {archive_dir};\n')
 
                         # get the full path to the test results archive file
-                        archive_file: str = str(os.path.join(archive_dir, f'{executor}.tar.gz'))
+                        # archive_file: str = str(os.path.join(archive_dir, f'{executor}.tar.gz'))
 
                         # compress the directory into the package directory
-                        fp.write(f'echo "Zip and Tar the results dir into {archive_file}"; tar -zcvf "{archive_file}" {data_path};\n')
+                        # fp.write(f'echo "Zip and Tar the results dir into {archive_file}"; tar -zcvf "{archive_file}" {data_path};\n')
 
                     # make sure the file has the correct permissions
                     if sys.platform != 'win32':
