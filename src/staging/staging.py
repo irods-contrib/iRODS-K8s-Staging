@@ -217,8 +217,7 @@ class Staging:
                             self.default_pkg_dir = run_data['request_data']['package-dir']
 
                         # get the directory path
-                        # str(os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id'])))
-                        archive_dir: str = data_path
+                        archive_dir: str = str(os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id'])))
 
                         # create the command to create the directory
                         fp.write(f'echo "Creating the archive directory {archive_dir}..."; mkdir -p {archive_dir};\n')
