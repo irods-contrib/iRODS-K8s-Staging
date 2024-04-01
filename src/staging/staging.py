@@ -41,7 +41,10 @@ class Staging:
         # create a DB connection object
         self.db_info: PGImplementation = PGImplementation(db_names, _logger=self.logger)
 
-    def run(self, run_id: str, run_dir: str, step_type: StagingType, workflow_type: WorkflowTypeName = WorkflowTypeName.CORE) -> int:
+        # get the default iRODS package directory
+        self.default_pkg_dir = os.getenv('DEFAULT_PKG_DIR', '')
+
+    def run(self, run_id: str, run_dir: str, step_type: StagingType, workflow_type: WorkflowTypeName = WorkflowTypeName.CORE) -> ReturnCodes:
         """
         Performs the requested type of staging operation.
 
@@ -49,13 +52,13 @@ class Staging:
 
         :param run_id: The id of the run.
         :param run_dir: The base path of the directory to use for the staging operations.
-        :param step_type: The type of staging step, either 'initial' or 'final'
-        :param workflow_type:
+        :param step_type: The type of staging step, either 'initial' or 'final'.
+        :param workflow_type: The type of workflow.
 
         :return:
         """
         # init the return value
-        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
+        ret_val: ReturnCodes = ReturnCodes.EXIT_CODE_SUCCESS
 
         # is this an initial stage step?
         if step_type == StagingType.INITIAL_STAGING:
@@ -69,22 +72,22 @@ class Staging:
         # return to the caller
         return ret_val
 
-    def initial_staging(self, run_id: str, run_dir: str, staging_type: StagingType, workflow_type: WorkflowTypeName) -> int:
+    def initial_staging(self, run_id: str, run_dir: str, staging_type: StagingType, workflow_type: WorkflowTypeName) -> ReturnCodes:
         """
         Performs the initial staging
 
         :param run_id: The ID of the supervisor run request.
         :param run_dir: The path of the directory to use for the staging operations.
-        :param staging_type: The type of staging step, either 'initial' or 'final'
-        :param workflow_type: the type of workflow
+        :param staging_type: The type of staging step, either 'initial' or 'final'.
+        :param workflow_type: The type of workflow.
 
         :return:
         """
         # init the return code
-        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
+        ret_val: ReturnCodes = ReturnCodes.EXIT_CODE_SUCCESS
 
-        self.logger.info('Initial staging version %s start: run_id: %s, run_dir: %s, workflow type: %s', self.app_version, run_id, run_dir,
-                         workflow_type)
+        self.logger.info('Initial staging version %s start: run_id: %s, run_dir: %s, workflow type: %s', self.app_version, run_id,
+                         run_dir, workflow_type)
 
         try:
             # create the full run directory name
@@ -111,7 +114,7 @@ class Staging:
                     ret_val = self.create_test_files(run_dir, run_data, workflow_type)
             else:
                 # set the return value
-                ret_val = run_data
+                ret_val = ReturnCodes.DB_ERROR
 
         except Exception:
             # declare ready
@@ -125,18 +128,18 @@ class Staging:
         # return the result to the caller
         return ret_val
 
-    def create_test_files(self, run_dir: str, run_data: json, workflow_type: WorkflowTypeName) -> int:
+    def create_test_files(self, run_dir: str, run_data: json, workflow_type: WorkflowTypeName) -> ReturnCodes:
         """
         Creates the files that contain the requested test executor and tests.
 
         :param run_dir: The path of the directory to use for the staging operations.
-        :param run_data: The run data information from the supervisor
-        :param workflow_type: the type of workflow
+        :param run_data: The run data information from the supervisor.
+        :param workflow_type: The type of workflow.
 
         :return:
         """
         # init the return
-        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
+        ret_val: ReturnCodes = ReturnCodes.EXIT_CODE_SUCCESS
 
         # init the filename storage
         out_file_name: str = 'empty'
@@ -161,7 +164,7 @@ class Staging:
                     with open(out_file_name, 'w', encoding='utf-8') as fp:
                         self.logger.debug('Writing to %s', out_file_name)
 
-                        # write out the preamble
+                        # write out the preamble and get into the test results directory
                         fp.write('#/bin/bash\ncd /var/lib/irods;\n')
 
                         # init the base command line.
@@ -169,6 +172,9 @@ class Staging:
 
                         # init the topology test type
                         topology_test_type: str = ''
+
+                        # get the data path
+                        data_path: str = os.path.join(run_dir, executor)
 
                         # get the command line
                         if workflow_type == WorkflowTypeName.CORE:
@@ -193,22 +199,38 @@ class Staging:
                             # create the test entry with some extra info
                             fp.write(f'echo "Running {test}"; {base_cmd_line}{topology_test_type} --run_s {test};\n')
 
-                        # create the results directory
-                        fp.write(f'echo "Creating the results dir {run_dir}/{executor}..."; mkdir {run_dir}/{executor};\n')
+                        # create the results directory in the k8s file store
+                        fp.write(f'echo "Creating the run results dir {data_path}..."; mkdir {data_path};\n')
 
                         # save the log directory for extended forensics
-                        fp.write(f'echo "Copying /var/lib/irods dir..."; cp -R /var/lib/irods/ {run_dir}/{executor}/;\n')
+                        fp.write(f'echo "Copying /var/lib/irods/log dir into {data_path}..."; cp -R /var/lib/irods/log {data_path};\n')
+
+                        # save the log directory for extended forensics
+                        fp.write(f'echo "Copying /var/lib/irods/test-reports dir into {data_path}..."; cp -R /var/lib/irods/test-reports'
+                                 f' {data_path};\n')
 
                         # this directory may or may not exist
-                        fp.write(f'echo "Copying /var/log/irods/ dir..."; cp -R /var/log/irods/ {run_dir}/{executor}/;\n')
+                        fp.write(f'echo "Copying /var/log/irods dir into {data_path}..."; cp -R /var/log/irods {data_path};\n')
+
+                        # if specified, use the package directory
+                        if run_data['request_data']['package-dir']:
+                            self.default_pkg_dir = run_data['request_data']['package-dir']
+
+                        # get the full path to the test results archive file
+                        archive_file = os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id']), f'{executor}.tar.gz')
+
+                        # compress the directory into the package directory
+                        fp.write(
+                            f"echo 'Zip and Tar the results dir {data_path} into {archive_file}'; tar -zcvf {archive_file} "
+                            f"{data_path};\n")
 
                     # make sure the file has the correct permissions
                     if sys.platform != 'win32':
                         os.chmod(out_file_name, 0o777)
 
                 else:
-                    self.logger.debug('WARNING: An executor was specified with no tests. executor name %s, run_dir: %s, workflow type: %s',
-                                      executor, run_dir, workflow_type.name)
+                    self.logger.debug('WARNING: An executor was specified with no tests. executor name %s, run_dir: %s, workflow type: %s', executor,
+                                      run_dir, workflow_type.name)
             else:
                 self.logger.debug('WARNING: Invalid or missing executor. name: %s, run_dir: %s, workflow type: %s', executor, run_dir,
                                   workflow_type.name)
@@ -223,17 +245,17 @@ class Staging:
         # return to the caller
         return ret_val
 
-    def final_staging(self, run_id: str, run_dir: str, staging_type: StagingType) -> int:
+    def final_staging(self, run_id: str, run_dir: str, staging_type: StagingType) -> ReturnCodes:
         """
         Performs the final staging
 
-        :param run_dir: The path of the directory to use for the staging operations.
         :param run_id: The ID of the supervisor run request.
+        :param run_dir: The path of the directory to use for the staging operations.
         :param staging_type: The type of staging step, either 'initial' or 'final'
         :return:
         """
         # init the return code
-        ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
+        ret_val: ReturnCodes = ReturnCodes.EXIT_CODE_SUCCESS
 
         # create the full run directory name
         run_dir = os.path.join(run_dir, run_id)
@@ -245,7 +267,8 @@ class Staging:
             if os.path.isdir(run_dir):
                 self.logger.info('Run dir exists. run_dir: %s', run_dir)
 
-                # do more things here.
+                # # remove the working directory from the k8s file system
+                # shutil.rmtree(run_dir)
             else:
                 ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:

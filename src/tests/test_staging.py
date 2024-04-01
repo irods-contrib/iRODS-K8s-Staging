@@ -14,7 +14,7 @@ from src.staging.staging import Staging
 from src.common.staging_enums import StagingType, WorkflowTypeName, ReturnCodes
 
 
-#@pytest.mark.skip(reason="Local test only")
+# @pytest.mark.skip(reason="Local test only")
 def test_run():
     """
     tests doing the normal operations for initial and final staging.
@@ -33,7 +33,7 @@ def test_run():
     run_id: str = '0'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'grp3')
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'some-dir')
 
     # make the call to do an initial stage with an invalid run id
     ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
@@ -42,22 +42,16 @@ def test_run():
     assert ret_val == ReturnCodes.DB_ERROR
 
     # set a valid run ID
-    run_id: str = '68'
+    run_id: str = '1'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'grp3')
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'save-this-test-1')
 
     # make the call to do an initial stage
-    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.TOPOLOGY)
+    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
 
     # make sure of a successful return code and a bash file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'PROVIDER_test_list.sh'))
-
-    # make the call to do a final stage. this dir was created above so it should be removed
-    ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
-
-    # make sure of a successful return code and a missing file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
     # make the call to do an initial stage
     ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
@@ -78,16 +72,16 @@ def test_run():
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
     # set a valid run ID. however, although this one has an executor specified it has no tests listed in the DB
-    run_id: str = '67'
+    run_id: str = '2'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.getenv('TEST_PATH'), run_id)
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'save-this-test-2')
 
     # make the call to do an initial stage
-    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.CORE)
+    ret_val = staging.run(run_id, run_dir, StagingType.INITIAL_STAGING, WorkflowTypeName.TOPOLOGY)
 
     # make sure of a successful return code and a bash file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'PROVIDER_test_list.sh'))
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'CONSUMER_test_list.sh'))
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
@@ -96,7 +90,7 @@ def test_run():
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
 
 
-#@pytest.mark.skip(reason="Local test only")
+# @pytest.mark.skip(reason="Local test only")
 def test_file_creation():
     """
     tests the creation of a file that contains the requested tests
@@ -106,44 +100,38 @@ def test_file_creation():
     # init the return value
     ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
 
+    # clear out any previous results
+    if os.path.isfile(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh')):
+        os.unlink(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
+
+    # clear out any previous results
+    if os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh')):
+        os.unlink(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh'))
+
     # create the target class
     staging = Staging()
 
-    tests_data = {"CONSUMER": ["test_auth.test_ihelp"]}
+    # create a topology test list with only a provider test declared
+    run_data: dict = {"id": 1, "status": "New run accepted for save-this-test-1",
+                      "request_data": {"workflow-type": "CORE", "db-image": "postgres:14.11", "db-type": "postgres",
+                                       "os-image": "irods-ubuntu-20.04:latest",
+                                       "package-dir": "/projects/irods/github-build-artifacts/3957adb/ubuntu:20.04",
+                                       "tests": {"PROVIDER": ["test_ihelp"]}}, "request_group": "save-this-test-1"}
+
+    # make the call
+    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
+
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
 
     # create a topology test list with only a provider test declared
-    run_data: dict = {"request_data": {"workflow-type": "TOPOLOGY", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
-                                       "tests": tests_data}}
+    run_data: dict = {"id": 2, "status": "New run accepted for save-this-test-1",
+                      "request_data": {"workflow-type": "TOPOLOGY", "db-image": "postgres:14.11", "db-type": "postgres",
+                                       "os-image": "irods-ubuntu-20.04:latest",
+                                       "package-dir": "/projects/irods/github-build-artifacts/3957adb/ubuntu:20.04",
+                                       "tests": {"CONSUMER": ["test_ihelp", "test_ils"]}}, "request_group": "save-this-test-1"}
 
     # make the call
     ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.TOPOLOGY)
 
     # check the result
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh'))
-
-    tests_data = {"PROVIDER": ["test_auth.test_ihelp"]}
-
-    # create a topology test list with only a provider test declared
-    run_data: dict = {"request_data": {"workflow-type": "TOPOLOGY", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
-                                       "tests": tests_data}}
-
-    # make the call
-    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.TOPOLOGY)
-
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
-
-    # remove the files created
-    os.unlink(os.path.join(os.path.dirname(__file__), 'CONSUMER_test_list.sh'))
-    os.unlink(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
-
-    run_data: dict = {"request_data": {"workflow-type": "CORE", "os-image": "ubuntu-20.04:latest", "test-image": "busybox:1.35",
-                                       "tests": {"PROVIDER": ["test_ihelp", "test_ilocate", "test_ils"]}}}
-
-    # make the call
-    ret_val = staging.create_test_files(os.path.dirname(__file__), run_data, WorkflowTypeName.CORE)
-
-    # check the result
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
-
-    # remove the files created
-    os.unlink(os.path.join(os.path.dirname(__file__), 'PROVIDER_test_list.sh'))
