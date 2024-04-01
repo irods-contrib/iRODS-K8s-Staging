@@ -212,15 +212,18 @@ class Staging:
                         # this directory may or may not exist
                         fp.write(f'echo "Copying /var/log/irods dir into {data_path}..."; cp -R /var/log/irods {data_path};\n')
 
+                        #############
+                        # TODO: this section is commented out until the NFS directory permissions are resolved
+                        #############
                         # if specified, use the package directory
-                        if run_data['request_data']['package-dir']:
-                            self.default_pkg_dir = run_data['request_data']['package-dir']
+                        # if run_data['request_data']['package-dir']:
+                        #     self.default_pkg_dir = run_data['request_data']['package-dir']
 
                         # get the directory path
-                        archive_dir: str = str(os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id'])))
+                        # archive_dir: str = str(os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id'])))
 
                         # create the command to create the directory
-                        fp.write(f'echo "Creating the archive directory {archive_dir}..."; mkdir -p {archive_dir};\n')
+                        # fp.write(f'echo "Creating the archive directory {archive_dir}..."; mkdir -p {archive_dir};\n')
 
                         # get the full path to the test results archive file
                         # archive_file: str = str(os.path.join(archive_dir, f'{executor}.tar.gz'))
