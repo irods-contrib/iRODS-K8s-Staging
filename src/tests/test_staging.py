@@ -15,9 +15,9 @@ from src.common.staging_enums import StagingType, WorkflowTypeName, ReturnCodes
 
 
 # @pytest.mark.skip(reason="Local test only")
-def test_run():
+def test_initial_staging_run():
     """
-    tests doing the normal operations for initial and final staging.
+    tests doing the normal operations for initial staging.
 
     this test requires that DB connection parameters are set
 
@@ -65,12 +65,6 @@ def test_run():
     # ensure we got a failure code
     assert ret_val == ReturnCodes.ERROR_NO_RUN_DIR
 
-    # make the call to do a final stage. this dir was created above so it should be removed
-    ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
-
-    # make sure of a successful return code and a missing bash file
-    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
-
     # set a valid run ID. however, although this one has an executor specified it has no tests listed in the DB
     run_id: str = '2'
 
@@ -82,6 +76,40 @@ def test_run():
 
     # make sure of a successful return code and a bash file
     assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS and os.path.isfile(os.path.join(run_dir, run_id, 'CONSUMER_test_list.sh'))
+
+
+# @pytest.mark.skip(reason="Local test only")
+def test_final_staging_run():
+    """
+    tests doing the normal operations for final staging.
+
+    this test requires that DB connection parameters are set
+
+    :return:
+    """
+    # init the return value
+    ret_val: int = ReturnCodes.EXIT_CODE_SUCCESS
+
+    # create the target class
+    staging = Staging()
+
+    # set a valid run ID
+    run_id: str = '1'
+
+    # set up the test directory
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'save-this-test-1')
+
+    # make the call to do a final stage. this dir was created above so it should be removed
+    ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
+
+    # make sure of a successful return code and a missing bash file
+    assert ret_val == ReturnCodes.EXIT_CODE_SUCCESS  # final no longer removes directories and not os.path.isdir(os.path.join(run_dir, run_id))
+
+    # set a valid run ID. however, although this one has an executor specified it has no tests listed in the DB
+    run_id: str = '2'
+
+    # set up the test directory
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'save-this-test-2')
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)

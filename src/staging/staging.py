@@ -212,25 +212,6 @@ class Staging:
                         # this directory may or may not exist
                         fp.write(f'echo "Copying /var/log/irods dir into {data_path}..."; cp -R /var/log/irods {data_path};\n')
 
-                        #############
-                        # TODO: this section is commented out until the NFS directory permissions are resolved
-                        #############
-                        # if specified, use the package directory
-                        # if run_data['request_data']['package-dir']:
-                        #     self.default_pkg_dir = run_data['request_data']['package-dir']
-
-                        # get the directory path
-                        # archive_dir: str = str(os.path.join(self.default_pkg_dir, run_data['request_group'], str(run_data['id'])))
-
-                        # create the command to create the directory
-                        # fp.write(f'echo "Creating the archive directory {archive_dir}..."; mkdir -p {archive_dir};\n')
-
-                        # get the full path to the test results archive file
-                        # archive_file: str = str(os.path.join(archive_dir, f'{executor}.tar.gz'))
-
-                        # compress the directory into the package directory
-                        # fp.write(f'echo "Zip and Tar the results dir into {archive_file}"; tar -zcvf "{archive_file}" {data_path};\n')
-
                     # make sure the file has the correct permissions
                     if sys.platform != 'win32':
                         os.chmod(out_file_name, 0o777)
@@ -265,27 +246,42 @@ class Staging:
         ret_val: ReturnCodes = ReturnCodes.EXIT_CODE_SUCCESS
 
         # create the full run directory name
-        run_dir = os.path.join(run_dir, run_id)
+        new_run_dir = os.path.join(run_dir, run_id)
 
-        self.logger.info('Final staging version %s start: run_dir: %s', self.app_version, run_dir)
+        self.logger.info('Final staging version %s start: run_dir: %s', self.app_version, new_run_dir)
 
         try:
             # does the directory exist?
-            if os.path.isdir(run_dir):
-                self.logger.info('Run dir exists. run_dir: %s', run_dir)
+            if os.path.isdir(new_run_dir):
+                self.logger.info('Run dir exists. run_dir: %s', new_run_dir)
 
-                # # remove the working directory from the k8s file system
-                # shutil.rmtree(run_dir)
+                # try to make the call for run data records
+                run_data: json = self.db_info.get_run_def(run_id)
+
+                # did getting the data to go ok
+                if run_data != ReturnCodes.DB_ERROR:
+                    # make the call to get the run status
+                    run_status = self.db_info.get_run_status(run_data['request_group'])
+
+                    # if all runs are complete
+                    if run_status['Testing Jobs']['Total'] == run_status['Testing Jobs']['Complete']:
+                        # get the full path to the test results archive file
+                        archive_file: str = os.path.join(run_dir, f"{run_data['request_group']}-all-test-results")
+
+                        self.logger.info('Creating archive: %s.zip', archive_file)
+
+                        # compress the directory into the package directory
+                        shutil.make_archive(archive_file, 'zip', run_dir)
             else:
                 ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:
             # declare ready
-            self.logger.exception('Exception: The iRODS K8s "%s" final staging request for run directory %s failed.', staging_type, run_dir)
+            self.logger.exception('Exception: The iRODS K8s "%s" final staging request for run directory %s failed.', staging_type, new_run_dir)
 
             # set the exception error code
             ret_val = ReturnCodes.EXCEPTION_RUN_PROCESSING
 
-        self.logger.info('Final staging complete: run_dir: %s, ret_val: %s', run_dir, ret_val)
+        self.logger.info('Final staging complete: run_dir: %s, ret_val: %s', new_run_dir, ret_val)
 
         # return the result to the caller
         return ret_val

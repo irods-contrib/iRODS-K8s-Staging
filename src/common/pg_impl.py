@@ -59,3 +59,19 @@ class PGImplementation(PGUtilsMultiConnect):
 
         # return the data
         return ret_val
+
+    def get_run_status(self, request_group):
+        """
+        gets the run status
+
+        :return:
+        """
+
+        # create the sql
+        sql: str = f"SELECT public.get_run_status_json('{request_group}');"
+
+        # get the data
+        ret_val = self.exec_sql('irods-sv', sql)
+
+        # return the data
+        return ret_val
