@@ -7,6 +7,8 @@
 
     Author: Phil Owen, RENCI.org
 """
+import json
+
 from src.common.pg_utils_multi import PGUtilsMultiConnect
 from src.common.logger import LoggingUtil
 
@@ -15,12 +17,12 @@ class PGImplementation(PGUtilsMultiConnect):
     """
         Class that contains DB calls for the job supervisor.
 
-        Note this class inherits from the PGUtilsMultiConnect class
+        Note this class is inherited from the PGUtilsMultiConnect class
         which has all the connection and cursor handling.
     """
 
     def __init__(self, db_names: tuple, _logger=None, _auto_commit=True):
-        # if a reference to a logger passed in use it
+        # if a reference to a logger is passed in, use it
         if _logger is not None:
             # get a handle to a logger
             self.logger = _logger
@@ -52,7 +54,7 @@ class PGImplementation(PGUtilsMultiConnect):
         """
 
         # create the sql
-        sql: str =  f'SELECT public.get_supervisor_run_def_json({run_id})'
+        sql: str = f'SELECT public.get_supervisor_run_def_json({run_id})'
 
         # get the data
         ret_val = self.exec_sql('irods-sv', sql)
@@ -69,6 +71,29 @@ class PGImplementation(PGUtilsMultiConnect):
 
         # create the sql
         sql: str = f"SELECT public.get_run_status_json('{request_group}');"
+
+        # get the data
+        ret_val = self.exec_sql('irods-sv', sql)
+
+        # return the data
+        return ret_val
+
+    def update_run_results(self, run_id: str, results: json):
+        """
+        gets the supervisor run request for the run id passed.
+
+        :return:
+        """
+        # if there are test results
+        if results is not None:
+            # make sure the sql lacks single quotes
+            results = json.dumps(results).replace('\'', '')
+
+            # create the sql
+            sql: str = f"SELECT public.update_run_results({run_id}, '{results}')"
+        else:
+            # create the sql
+            sql: str = f"SELECT public.update_run_results({run_id}, null)"
 
         # get the data
         ret_val = self.exec_sql('irods-sv', sql)

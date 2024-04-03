@@ -101,6 +101,9 @@ class Staging:
                 # remove the run directory, ignore errors as it may not exist
                 shutil.rmtree(run_dir, ignore_errors=True)
 
+                # also clear out any previous test results
+                self.db_info.update_run_results(run_id, None)
+
                 # make the directory
                 os.makedirs(run_dir)
 
