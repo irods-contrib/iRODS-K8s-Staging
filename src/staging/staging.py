@@ -283,7 +283,9 @@ class Staging:
                         shutil.make_archive(archive_file, 'zip', run_dir)
 
                         # remove all directories from the run (leaving the archive file)
-                        [self.logger.info(f'dirs in {run_dir} deleted:', x) for x in glob.glob(f'{run_dir}/**/')]
+                        for dir in glob.glob(f'{run_dir}/**/'):
+                            self.logger.info(f'dirs in {run_dir} deleted:', dir)
+
                         # shutil.rmtree(x, ignore_errors=True) for x in glob.glob(f'{run_dir}/**/')]
 
             else:
