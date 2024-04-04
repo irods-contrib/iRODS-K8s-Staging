@@ -282,10 +282,10 @@ class Staging:
                         # compress the directory into the package directory
                         shutil.make_archive(archive_file, 'zip', run_dir)
 
-                        # remove all directories from the run (leaving the archive file)
-                        for dir in glob.glob(f'{run_dir}/**/'):
-                            self.logger.info(f'dirs in {run_dir} deleted:', dir)
+                        self.logger.info('run_dir: %s', run_dir)
 
+                        # remove all directories from the run (leaving the archive file)
+                        [self.logger.info(f'dirs in {run_dir} deleted:', data_dir) for data_dir in glob.glob(f'{run_dir}/**/')]
                         # shutil.rmtree(x, ignore_errors=True) for x in glob.glob(f'{run_dir}/**/')]
 
             else:
