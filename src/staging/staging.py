@@ -9,6 +9,7 @@ import os
 import json
 import shutil
 import sys
+import glob
 
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
@@ -77,7 +78,7 @@ class Staging:
         Performs the initial staging
 
         :param run_id: The ID of the supervisor run request.
-        :param run_dir: The path of the directory to use for the staging operations.
+        :param run_dir: The base path of the directory to use for the staging operations.
         :param staging_type: The type of staging step, either 'initial' or 'final'.
         :param workflow_type: The type of workflow.
 
@@ -86,12 +87,12 @@ class Staging:
         # init the return code
         ret_val: ReturnCodes = ReturnCodes.EXIT_CODE_SUCCESS
 
-        self.logger.info('Initial staging version %s start: run_id: %s, run_dir: %s, workflow type: %s', self.app_version, run_id,
-                         run_dir, workflow_type)
+        self.logger.info('Initial staging version %s start: run_id: %s, run_dir: %s, workflow type: %s', self.app_version, run_id, run_dir,
+                         workflow_type)
 
         try:
             # create the full run directory name
-            run_dir = os.path.join(run_dir, run_id)
+            new_run_dir = os.path.join(run_dir, run_id)
 
             # try to make the call for records
             run_data: json = self.db_info.get_run_def(run_id)
@@ -99,34 +100,39 @@ class Staging:
             # did getting the data to go ok
             if run_data != -1:
                 # remove the run directory, ignore errors as it may not exist
-                shutil.rmtree(run_dir, ignore_errors=True)
+                shutil.rmtree(new_run_dir, ignore_errors=True)
+
+                # remove zip files from previous runs
+                for file in glob.glob(os.path.join(run_dir, '*.zip')):
+                    # remove the file
+                    os.unlink(file)
 
                 # also clear out any previous test results
                 self.db_info.update_run_results(run_id, None)
 
                 # make the directory
-                os.makedirs(run_dir)
+                os.makedirs(new_run_dir)
 
                 # make sure the directory has the correct permissions
                 if sys.platform != 'win32':
-                    os.chmod(run_dir, 0o777)
+                    os.chmod(new_run_dir, 0o777)
 
                 # if there are tests requested, create the files
                 if 'tests' in run_data['request_data']:
                     # create the test file(s)
-                    ret_val = self.create_test_files(run_dir, run_data, workflow_type)
+                    ret_val = self.create_test_files(new_run_dir, run_data, workflow_type)
             else:
                 # set the return value
                 ret_val = ReturnCodes.DB_ERROR
 
         except Exception:
             # declare ready
-            self.logger.exception('Exception: The iRODS K8s "%s" staging request for run directory %s failed.', staging_type, run_dir)
+            self.logger.exception('Exception: The iRODS K8s "%s" staging request for run directory %s failed.', staging_type, new_run_dir)
 
             # set the exception error code
             ret_val = ReturnCodes.EXCEPTION_RUN_PROCESSING
 
-        self.logger.info('Initial staging complete: run_dir: %s, ret_val: %s', run_dir, ret_val)
+        self.logger.info('Initial staging complete: run_dir: %s, ret_val: %s', new_run_dir, ret_val)
 
         # return the result to the caller
         return ret_val
