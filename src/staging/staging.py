@@ -281,6 +281,11 @@ class Staging:
 
                         # compress the directory into the package directory
                         shutil.make_archive(archive_file, 'zip', run_dir)
+
+                        # remove all directories from the run (leaving the archive file)
+                        [self.logger.info(f'dirs in {run_dir} deleted:', x) for x in glob.glob(f'{run_dir}/**/')]
+                        # shutil.rmtree(x, ignore_errors=True) for x in glob.glob(f'{run_dir}/**/')]
+
             else:
                 ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:
