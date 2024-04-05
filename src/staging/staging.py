@@ -286,10 +286,6 @@ class Staging:
 
                         # remove all directories from the run (leaving the archive file)
                         [shutil.rmtree(data_dir, ignore_errors=True) for data_dir in glob.glob(f'{run_dir}/**/')]
-
-                        # for item in glob.glob(f'{run_dir}/**/'):
-                        #     self.logger.info(f'dir %s in %s/**/ deleted', item, run_dir)
-
             else:
                 ret_val = ReturnCodes.ERROR_NO_RUN_DIR
         except Exception:
