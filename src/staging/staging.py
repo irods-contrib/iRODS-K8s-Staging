@@ -275,7 +275,7 @@ class Staging:
                     # if all runs are complete
                     if run_status['Testing Jobs']['Total'] == run_status['Testing Jobs']['Complete']:
                         # get the full path to the test results archive file
-                        archive_file: str = os.path.join(run_dir, f"{run_data['request_group']}-all-test-results")
+                        archive_file: str = os.path.join(run_dir, f"{run_data['request_group']}.test-results")
 
                         self.logger.info('Creating archive: %s.zip', archive_file)
 
