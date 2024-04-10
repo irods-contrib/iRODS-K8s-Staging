@@ -275,12 +275,22 @@ class Staging:
                     # if all runs are complete
                     if run_status['Testing Jobs']['Total'] == run_status['Testing Jobs']['Complete']:
                         # get the full path to the test results archive file
-                        archive_file: str = os.path.join(run_dir, f"{run_data['request_group']}.test-results")
+                        k8s_archive_file: str = os.path.join(run_dir, f"{run_data['request_group']}.test-results")
 
-                        self.logger.info('Creating archive: %s.zip', archive_file)
+                        self.logger.info('Creating k8s archive: %s.zip', k8s_archive_file)
 
-                        # compress the directory into the package directory
-                        shutil.make_archive(archive_file, 'zip', run_dir)
+                        # compress the directory into the k8s data directory
+                        shutil.make_archive(k8s_archive_file, 'zip', run_dir)
+
+                        # if the package directory is defined
+                        if run_data['request_data']['package-dir']:
+                            # get the full path to the test results archive file
+                            nfs_archive_file: str = os.path.join(run_data['request_data']['package-dir'], f"{run_data['request_group']}.test-results")
+
+                            self.logger.info('Creating nfs archive: %s.zip', k8s_archive_file)
+
+                            # compress the directory into the package directory
+                            shutil.make_archive(nfs_archive_file, 'zip', run_dir)
 
                         # remove all directories from the run (leaving the archive file)
                         [shutil.rmtree(data_dir, ignore_errors=True) for data_dir in glob.glob(f'{run_dir}/**/')]

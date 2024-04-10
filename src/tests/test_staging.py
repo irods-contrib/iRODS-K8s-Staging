@@ -94,10 +94,10 @@ def test_final_staging_run():
     staging = Staging()
 
     # set a valid run ID
-    run_id: str = '1'
+    run_id: str = '12'
 
     # set up the test directory
-    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'save-this-test-1')
+    run_dir: str = os.path.join(os.getenv('TEST_PATH'), 'save-this-test-12')
 
     # make the call to do a final stage. this dir was created above so it should be removed
     ret_val = staging.run(run_id, run_dir, StagingType.FINAL_STAGING)
