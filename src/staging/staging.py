@@ -294,7 +294,7 @@ class Staging:
                             shutil.make_archive(nfs_archive_file, 'zip', run_dir)
 
                             # adjust the file properties of the archive to 775
-                            os.chmod(nfs_archive_file, 0o775)
+                            os.chmod(f'{nfs_archive_file}.zip', 0o775)
 
                         # remove all directories from the run (leaving the archive file)
                         [shutil.rmtree(data_dir, ignore_errors=True) for data_dir in glob.glob(f'{run_dir}/**/')]
