@@ -8,8 +8,6 @@
     Author: Phil Owen, RENCI.org
 """
 import os
-import pytest
-
 from src.staging.staging import Staging
 from src.common.staging_enums import StagingType, WorkflowTypeName, ReturnCodes
 

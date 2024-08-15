@@ -10,7 +10,6 @@ import json
 import shutil
 import sys
 import glob
-import zipfile
 
 from src.common.logger import LoggingUtil
 from src.common.pg_impl import PGImplementation
